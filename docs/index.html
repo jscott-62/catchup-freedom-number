@@ -327,19 +327,65 @@
     gap: 4px;
     margin-bottom: 12px;
   }
-  .fn-value-future {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text);
+  .fn-value-today-ref {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+    margin-top: 4px;
   }
-  .fn-value-future-label {
-    font-size: 11px;
+
+  /* Required return as co-headline */
+  .rr-headline {
+    margin-top: 20px;
+    padding: 18px 22px;
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  .rr-headline-label {
+    font-size: 12px;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: 600;
-    margin-top: 6px;
+    font-weight: 700;
+    margin-bottom: 8px;
   }
+  .rr-headline-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .rr-headline-value {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--accent);
+    transition: color 0.15s;
+  }
+  .rr-headline-value.calm { color: var(--green); }
+  .rr-headline-value.warm { color: var(--accent); }
+  .rr-headline-value.hot { color: var(--red); }
+  .rr-headline-real {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .rr-headline-hint {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.55;
+    margin-top: 10px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .rr-headline-hint strong { color: var(--accent); }
 
   /* ===== CTA SECTION ===== */
   .cta {
@@ -548,14 +594,23 @@
 
     <!-- RESULT -->
     <div class="fn-result">
-      <div class="fn-label">Your Freedom Number (today's dollars)</div>
+      <div class="fn-label" id="fnHeadlineLabel">Your Freedom Number</div>
       <div class="fn-value-row">
         <div class="fn-value" id="fnValue">$0</div>
-        <div class="fn-value-future-label" id="fnFutureLabel" style="display:none;">In 15 years at 3% inflation, you will need</div>
-        <div class="fn-value-future" id="fnFuture" style="display:none;">$0</div>
+        <div class="fn-value-today-ref" id="fnTodayRef" style="display:none;">≈ $0 in today's purchasing power</div>
       </div>
       <div class="fn-breakdown" id="fnBreakdown">
         Fill in the fields above to calculate your personalized Freedom Number.
+      </div>
+
+      <!-- Required return as a co-headline. Drives the asset decision. -->
+      <div class="rr-headline">
+        <div class="rr-headline-label">Required Annual Return</div>
+        <div class="rr-headline-row">
+          <div class="rr-headline-value" id="rrHeadlineValue">...</div>
+          <div class="rr-headline-real" id="rrHeadlineReal"></div>
+        </div>
+        <div class="rr-headline-hint" id="rrHeadlineHint">Enter your savings and timeline above to see what return you need.</div>
       </div>
 
       <div class="inflation-block">
@@ -714,22 +769,24 @@
     const freedomNumberFuture = result.freedomNumber * inflFactor;
 
     const valueEl = document.getElementById('fnValue');
-    const futureEl = document.getElementById('fnFuture');
-    const futureLabelEl = document.getElementById('fnFutureLabel');
+    const headlineLabelEl = document.getElementById('fnHeadlineLabel');
+    const todayRefEl = document.getElementById('fnTodayRef');
     const breakdownEl = document.getElementById('fnBreakdown');
     const mathEl = document.getElementById('fnMath');
     if (!valueEl) return;
 
-    valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
-
-    if (result.freedomNumber > 0 && inflPct > 0 && years > 0) {
-      futureEl.textContent = '$' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
-      futureLabelEl.textContent = 'In ' + years + ' year' + (years !== 1 ? 's' : '') + ' at ' + inflPct + '% inflation, you will need';
-      futureEl.style.display = 'block';
-      futureLabelEl.style.display = 'block';
+    // Headline number: future-nominal when inflation + years are set,
+    // today's-dollars otherwise. Today's-dollars becomes the small ref line.
+    const showFuture = result.freedomNumber > 0 && inflPct > 0 && years > 0;
+    if (showFuture) {
+      valueEl.textContent = '$' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      headlineLabelEl.textContent = 'Your Freedom Number in ' + years + ' year' + (years !== 1 ? 's' : '') + ' (at ' + inflPct + '% inflation)';
+      todayRefEl.textContent = '≈ $' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' in today\'s purchasing power';
+      todayRefEl.style.display = 'block';
     } else {
-      futureEl.style.display = 'none';
-      futureLabelEl.style.display = 'none';
+      valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      headlineLabelEl.textContent = 'Your Freedom Number';
+      todayRefEl.style.display = 'none';
     }
 
     const totalEl = document.getElementById('expDetailedTotalValue');
@@ -762,26 +819,45 @@
     _fn.calculatedRR = rrPct;
     const realReturnPct = Math.max(0, rrPct - inflPct);
 
+    // Section 3 inline display (kept for live in-context input adjustment)
     const rrEl = document.getElementById('spRequiredReturn');
     const rrHintEl = document.getElementById('spRequiredReturnHint');
-    if (rrEl) {
-      if (result.freedomNumber === 0) {
-        rrEl.textContent = '...';
-        rrEl.style.color = 'var(--accent)';
-        rrHintEl.textContent = 'Set your Freedom Number first.';
-      } else if (_fn.spSavings >= targetFN) {
-        rrEl.textContent = '0%';
-        rrEl.style.color = 'var(--green)';
-        rrHintEl.innerHTML = `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your inflation-adjusted Freedom Number.`;
-      } else if (rrPct >= 100) {
-        rrEl.textContent = '100%+';
-        rrEl.style.color = 'var(--red)';
-        rrHintEl.innerHTML = `No realistic asset delivers this at ${inflPct}% inflation. Consider: more years, higher monthly investment, lower inflation assumption, or a lower Freedom Number target.`;
-      } else {
-        rrEl.textContent = rrPct + '%';
-        rrEl.style.color = rrPct <= 12 ? 'var(--green)' : rrPct <= 22 ? 'var(--accent)' : 'var(--red)';
-        rrHintEl.innerHTML = `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}% nominal</strong> to reach the inflation-adjusted target. That is about <strong>${realReturnPct}% real</strong> after ${inflPct}% inflation.`;
+    // Co-headline display in the result panel (the focal point of the page)
+    const rrBigEl = document.getElementById('rrHeadlineValue');
+    const rrBigRealEl = document.getElementById('rrHeadlineReal');
+    const rrBigHintEl = document.getElementById('rrHeadlineHint');
+
+    function setRR(text, color, realStr, hintHtml, zone) {
+      if (rrEl) { rrEl.textContent = text; rrEl.style.color = color; }
+      if (rrHintEl) rrHintEl.innerHTML = hintHtml;
+      if (rrBigEl) {
+        rrBigEl.textContent = text;
+        rrBigEl.className = 'rr-headline-value' + (zone ? ' ' + zone : '');
       }
+      if (rrBigRealEl) rrBigRealEl.textContent = realStr || '';
+      if (rrBigHintEl) rrBigHintEl.innerHTML = hintHtml;
+    }
+
+    if (result.freedomNumber === 0) {
+      setRR('...', 'var(--accent)', '', 'Enter your numbers above to see your required return.', null);
+    } else if (_fn.spSavings >= targetFN) {
+      setRR('0%', 'var(--green)', '',
+        `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your inflation-adjusted Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`,
+        'calm');
+    } else if (rrPct >= 100) {
+      setRR('100%+', 'var(--red)', '',
+        `No realistic asset delivers this at ${inflPct}% inflation. Consider more years, higher monthly investment, lower inflation assumption, or a lower Freedom Number target.`,
+        'hot');
+    } else {
+      const zone = rrPct <= 12 ? 'calm' : rrPct <= 22 ? 'warm' : 'hot';
+      const color = rrPct <= 12 ? 'var(--green)' : rrPct <= 22 ? 'var(--accent)' : 'var(--red)';
+      setRR(
+        rrPct + '%',
+        color,
+        '(' + realReturnPct + '% real after ' + inflPct + '% inflation)',
+        `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}% nominal</strong> to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`,
+        zone
+      );
     }
   }
 
