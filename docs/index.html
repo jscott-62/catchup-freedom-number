@@ -245,6 +245,102 @@
     font-weight: 700;
   }
 
+  /* ===== INFLATION SLIDER ===== */
+  .inflation-block {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(245, 158, 11, 0.25);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }
+  .inflation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .inflation-label {
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .inflation-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .inflation-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  .inflation-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .inflation-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  .inflation-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  .inflation-explainer {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(245, 158, 11, 0.06);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .inflation-explainer strong { color: var(--accent); }
+  .fn-value-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .fn-value-future {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .fn-value-future-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
+
   /* ===== CTA SECTION ===== */
   .cta {
     margin-top: 28px;
@@ -452,11 +548,30 @@
 
     <!-- RESULT -->
     <div class="fn-result">
-      <div class="fn-label">Your Freedom Number</div>
-      <div class="fn-value" id="fnValue">$0</div>
+      <div class="fn-label">Your Freedom Number (today's dollars)</div>
+      <div class="fn-value-row">
+        <div class="fn-value" id="fnValue">$0</div>
+        <div class="fn-value-future-label" id="fnFutureLabel" style="display:none;">In 15 years at 3% inflation, you will need</div>
+        <div class="fn-value-future" id="fnFuture" style="display:none;">$0</div>
+      </div>
       <div class="fn-breakdown" id="fnBreakdown">
         Fill in the fields above to calculate your personalized Freedom Number.
       </div>
+
+      <div class="inflation-block">
+        <div class="inflation-header">
+          <span class="inflation-label">Inflation Assumption</span>
+          <span class="inflation-value" id="inflationValue">3%</span>
+        </div>
+        <input type="range" id="inflationSlider" class="inflation-slider" min="2" max="12" step="0.5" value="3">
+        <div class="inflation-ticks">
+          <span>2%</span><span>4%</span><span>6%</span><span>8%</span><span>10%</span><span>12%</span>
+        </div>
+        <div class="inflation-explainer">
+          Official CPI runs around 2 to 3 percent. Many people believe the real cost-of-living inflation in housing, healthcare, and food is closer to 6 to 10 percent. Slide higher to see what happens to your number when the dollar is debased.
+        </div>
+      </div>
+
       <div class="fn-actions">
         <button class="fn-btn secondary" id="fnShowMath">Show the Math</button>
       </div>
@@ -501,6 +616,7 @@
     spSavings: 50000,
     spMonthly: 500,
     spYears: 15,
+    inflationRate: 3,
     calculatedFN: 0,
     calculatedRR: 0
   };
@@ -538,6 +654,8 @@
     document.getElementById('spSavings').value = _fn.spSavings;
     document.getElementById('spMonthly').value = _fn.spMonthly;
     document.getElementById('spYears').value = _fn.spYears;
+    document.getElementById('inflationSlider').value = _fn.inflationRate;
+    document.getElementById('inflationValue').textContent = _fn.inflationRate + '%';
     if (_fn.expMode === 'detailed') {
       document.getElementById('expToggleSimple').classList.remove('active');
       document.getElementById('expToggleDetailed').classList.add('active');
@@ -587,12 +705,32 @@
     const result = calcFreedomNumber();
     _fn.calculatedFN = result.freedomNumber;
 
+    // Inflation-adjusted target: today's FN compounded at the chosen rate
+    // over the user's years-to-retirement. This is the NOMINAL pile they
+    // need by retirement to preserve today's purchasing power.
+    const inflPct = _fn.inflationRate || 3;
+    const years = _fn.spYears || 0;
+    const inflFactor = Math.pow(1 + inflPct / 100, years);
+    const freedomNumberFuture = result.freedomNumber * inflFactor;
+
     const valueEl = document.getElementById('fnValue');
+    const futureEl = document.getElementById('fnFuture');
+    const futureLabelEl = document.getElementById('fnFutureLabel');
     const breakdownEl = document.getElementById('fnBreakdown');
     const mathEl = document.getElementById('fnMath');
     if (!valueEl) return;
 
     valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+    if (result.freedomNumber > 0 && inflPct > 0 && years > 0) {
+      futureEl.textContent = '$' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      futureLabelEl.textContent = 'In ' + years + ' year' + (years !== 1 ? 's' : '') + ' at ' + inflPct + '% inflation, you will need';
+      futureEl.style.display = 'block';
+      futureLabelEl.style.display = 'block';
+    } else {
+      futureEl.style.display = 'none';
+      futureLabelEl.style.display = 'none';
+    }
 
     const totalEl = document.getElementById('expDetailedTotalValue');
     if (totalEl) totalEl.textContent = '$' + result.monthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -612,12 +750,17 @@
       <div class="fn-math-row"><span style="color:var(--green)">- Annual guaranteed income</span><span style="color:var(--green)">-$${result.annualIncome.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
       <div class="fn-math-row"><span>Annual gap (what savings must cover)</span><span>$${result.annualGap.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
       <div class="fn-math-row"><span>/ Withdrawal rate</span><span>/ ${wdRatePct}%</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number</span><span>$${result.freedomNumber.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number (today)</span><span>$${result.freedomNumber.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+      <div class="fn-math-row"><span>x Inflation over ${years}y at ${inflPct}%</span><span>x ${inflFactor.toFixed(2)}</span></div>
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number (future nominal)</span><span>$${freedomNumberFuture.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
     `;
 
-    const rrDecimal = calcRequiredReturnFromFN(result.freedomNumber, _fn.spSavings, _fn.spMonthly, _fn.spYears);
+    // Required return now targets the inflation-adjusted FN, not today's
+    const targetFN = freedomNumberFuture > 0 ? freedomNumberFuture : result.freedomNumber;
+    const rrDecimal = calcRequiredReturnFromFN(targetFN, _fn.spSavings, _fn.spMonthly, _fn.spYears);
     const rrPct = Math.round(rrDecimal * 100);
     _fn.calculatedRR = rrPct;
+    const realReturnPct = Math.max(0, rrPct - inflPct);
 
     const rrEl = document.getElementById('spRequiredReturn');
     const rrHintEl = document.getElementById('spRequiredReturnHint');
@@ -626,18 +769,18 @@
         rrEl.textContent = '...';
         rrEl.style.color = 'var(--accent)';
         rrHintEl.textContent = 'Set your Freedom Number first.';
-      } else if (_fn.spSavings >= result.freedomNumber) {
+      } else if (_fn.spSavings >= targetFN) {
         rrEl.textContent = '0%';
         rrEl.style.color = 'var(--green)';
-        rrHintEl.innerHTML = `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your Freedom Number. You’re there.`;
+        rrHintEl.innerHTML = `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your inflation-adjusted Freedom Number.`;
       } else if (rrPct >= 100) {
         rrEl.textContent = '100%+';
         rrEl.style.color = 'var(--red)';
-        rrHintEl.innerHTML = `No realistic asset delivers this. Consider: more years, higher monthly investment, or a lower Freedom Number target.`;
+        rrHintEl.innerHTML = `No realistic asset delivers this at ${inflPct}% inflation. Consider: more years, higher monthly investment, lower inflation assumption, or a lower Freedom Number target.`;
       } else {
         rrEl.textContent = rrPct + '%';
         rrEl.style.color = rrPct <= 12 ? 'var(--green)' : rrPct <= 22 ? 'var(--accent)' : 'var(--red)';
-        rrHintEl.innerHTML = `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually.`;
+        rrHintEl.innerHTML = `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}% nominal</strong> to reach the inflation-adjusted target. That is about <strong>${realReturnPct}% real</strong> after ${inflPct}% inflation.`;
       }
     }
   }
@@ -671,6 +814,15 @@
       if (el && el.tagName === 'SELECT') el.addEventListener('change', onInput);
     });
     document.getElementById('incSkipSS').addEventListener('change', onInput);
+
+    // Inflation slider — live-updates the value label and re-renders
+    const slider = document.getElementById('inflationSlider');
+    slider.addEventListener('input', () => {
+      _fn.inflationRate = parseFloat(slider.value) || 3;
+      document.getElementById('inflationValue').textContent = _fn.inflationRate + '%';
+      render();
+      debounceSave();
+    });
 
     document.getElementById('expToggleSimple').addEventListener('click', () => {
       _fn.expMode = 'simple';
