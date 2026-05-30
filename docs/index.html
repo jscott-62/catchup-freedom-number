@@ -910,7 +910,7 @@
     // Inflation-adjusted target: today's FN compounded at the chosen rate
     // over the user's years-to-retirement. This is the NOMINAL pile they
     // need by retirement to preserve today's purchasing power.
-    const inflPct = _fn.inflationRate || 3;
+    const inflPct = (typeof _fn.inflationRate === 'number' && !isNaN(_fn.inflationRate)) ? _fn.inflationRate : 3;
     const years = _fn.spYears || 0;
     const inflFactor = Math.pow(1 + inflPct / 100, years);
     const freedomNumberFuture = result.freedomNumber * inflFactor;
