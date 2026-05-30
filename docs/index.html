@@ -979,7 +979,7 @@
     const rrBigRealEl = document.getElementById('rrHeadlineReal');
     const rrBigHintEl = document.getElementById('rrHeadlineHint');
 
-    function setRR(text, color, realStr, hintHtml) {
+    function setRR(text, color, hintHtml) {
       if (rrEl) { rrEl.textContent = text; rrEl.style.color = color; }
       if (rrHintEl) rrHintEl.innerHTML = hintHtml;
       if (rrBigEl) {
@@ -987,24 +987,21 @@
         rrBigEl.className = 'rr-headline-value';
         rrBigEl.style.color = color;
       }
-      if (rrBigRealEl) rrBigRealEl.textContent = realStr || '';
+      if (rrBigRealEl) rrBigRealEl.textContent = '';
       if (rrBigHintEl) rrBigHintEl.innerHTML = hintHtml;
     }
 
     if (result.freedomNumber === 0) {
-      setRR('...', 'var(--accent)', '', 'Enter your numbers above to see your required return.');
+      setRR('...', 'var(--accent)', 'Enter your numbers above to see your required return.');
     } else if (_fn.spSavings >= targetFN) {
-      setRR('0%', 'var(--green)', '',
+      setRR('0%', 'var(--green)',
         `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`);
     } else if (rrPct >= 100) {
-      setRR('100%+', 'var(--accent)', '',
+      setRR('100%+', 'var(--accent)',
         `Consider more years, higher monthly investment${showInflation ? ', a lower inflation assumption' : ''}, or a lower Freedom Number target.`);
     } else {
-      const realStr = showInflation ? '(' + realReturnPct + '% after inflation)' : '';
-      const hint = showInflation
-        ? `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. That is <strong>${realReturnPct}% after-inflation growth</strong> in your real buying power.`
-        : `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`;
-      setRR(rrPct + '%', 'var(--accent)', realStr, hint);
+      const hint = `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`;
+      setRR(rrPct + '%', 'var(--accent)', hint);
     }
   }
 
