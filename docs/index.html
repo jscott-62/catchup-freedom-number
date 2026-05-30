@@ -924,7 +924,7 @@
 
     // Headline number depends on whether the user has opted into seeing
     // the inflation-adjusted view. Default is today's-dollars (calmer).
-    const showInflation = !!_fn.showInflation && result.freedomNumber > 0 && inflPct > 0 && years > 0;
+    const showInflation = !!_fn.showInflation && result.freedomNumber > 0 && inflPct >= 0 && years > 0;
     const panelEl = document.getElementById('fnResultPanel');
     if (panelEl) panelEl.classList.toggle('hide-inflation', !showInflation);
 
