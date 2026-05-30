@@ -387,6 +387,75 @@
   .rr-headline-zone.index-zone { color: var(--blue); }
   .rr-headline-zone.growth-zone { color: var(--accent); }
   .rr-headline-zone.concentrated-zone { color: #fb923c; }
+
+  /* Info icon + collapsible explainer */
+  .info-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    transition: all 0.15s;
+    vertical-align: middle;
+  }
+  .info-icon-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .info-icon-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+  }
+  .info-explainer {
+    display: none;
+    margin-top: 12px;
+    padding: 14px 18px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    text-align: left;
+  }
+  .info-explainer.show { display: block; }
+  .info-explainer strong { color: var(--accent); }
+  .info-explainer h4 {
+    color: var(--accent);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+  .info-explainer h4:first-child { margin-top: 0; }
+  .info-explainer ul {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0;
+  }
+  .info-explainer li {
+    padding: 2px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .info-explainer li::before {
+    content: '•';
+    color: var(--accent);
+    position: absolute;
+    left: 0;
+  }
+
   .rr-headline-hint {
     font-size: 13px;
     color: var(--text);
@@ -668,13 +737,37 @@
 
       <div class="inflation-block">
         <div class="inflation-header">
-          <span class="inflation-label">Inflation Assumption</span>
+          <span class="inflation-label">
+            Inflation Assumption
+            <button class="info-icon-btn" id="inflationInfoBtn" title="What is this?">?</button>
+          </span>
           <span class="inflation-value" id="inflationValue">3%</span>
         </div>
         <input type="range" id="inflationSlider" class="inflation-slider" min="2" max="12" step="0.5" value="3">
         <div class="inflation-ticks">
           <span>2%</span><span>4%</span><span>6%</span><span>8%</span><span>10%</span><span>12%</span>
         </div>
+
+        <div class="info-explainer" id="inflationInfoExplainer">
+          <h4>What inflation does to your number</h4>
+          <p>Inflation is the slow rise in prices over time. A dollar today does not buy what it bought 20 years ago. The same is true going forward: by the time you retire in 15 years, the dollars in your retirement account will buy less than they do now.</p>
+
+          <h4>Why we show two return numbers</h4>
+          <p>Your investment statement will report one return (for example, 21%). That is the number on paper.</p>
+          <p>But inflation eats into that growth. If your account grew 21% but prices went up 3%, only 18% of that growth actually bought you more in real life.</p>
+          <ul>
+            <li><strong>21%</strong>: what your investments need to grow on paper each year</li>
+            <li><strong>18% after inflation</strong>: what your real buying power needs to grow</li>
+          </ul>
+
+          <h4>What inflation rate should you pick?</h4>
+          <ul>
+            <li>The government's official measure (CPI) usually says 2-3%</li>
+            <li>Many people believe real cost-of-living inflation, especially in housing, healthcare, and food, runs more like 6-10%</li>
+            <li>For a stress test, slide up to 12% and see what happens</li>
+          </ul>
+        </div>
+
         <div class="inflation-explainer">
           Official CPI runs around 2 to 3 percent. Many people believe the real cost-of-living inflation in housing, healthcare, and food is closer to 6 to 10 percent. Slide higher to see what happens to your number when the dollar is debased.
         </div>
@@ -952,9 +1045,9 @@
         'concentrated-zone');
     } else {
       const tier = getRRTier(rrPct);
-      const realStr = showInflation ? '(' + realReturnPct + '% real after ' + inflPct + '% inflation)' : '';
+      const realStr = showInflation ? '(' + realReturnPct + '% after inflation)' : '';
       const hint = showInflation
-        ? `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}% nominal</strong> to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. ${tier.action}`
+        ? `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. That is <strong>${realReturnPct}% after-inflation growth</strong> in your real buying power. ${tier.action}`
         : `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. ${tier.action}`;
       setRR(rrPct + '%', tier.color, realStr, tier.zoneLabel, hint, tier.zoneClass);
     }
@@ -1006,6 +1099,16 @@
         _fn.showInflation = !_fn.showInflation;
         render();
         debounceSave();
+      });
+    }
+
+    // Info icon next to "Inflation Assumption" — toggles explainer panel
+    const infBtn = document.getElementById('inflationInfoBtn');
+    const infExp = document.getElementById('inflationInfoExplainer');
+    if (infBtn && infExp) {
+      infBtn.addEventListener('click', () => {
+        const open = infExp.classList.toggle('show');
+        infBtn.classList.toggle('active', open);
       });
     }
 
