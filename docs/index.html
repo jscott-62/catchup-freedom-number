@@ -1086,7 +1086,8 @@
     // Inflation slider — live-updates the value label and re-renders
     const slider = document.getElementById('inflationSlider');
     slider.addEventListener('input', () => {
-      _fn.inflationRate = parseFloat(slider.value) || 3;
+      const v = parseFloat(slider.value);
+      _fn.inflationRate = isNaN(v) ? 3 : v;
       document.getElementById('inflationValue').textContent = _fn.inflationRate + '%';
       render();
       debounceSave();
