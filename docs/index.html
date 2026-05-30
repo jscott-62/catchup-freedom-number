@@ -511,6 +511,90 @@
   }
   .cta .fn-btn { font-size: 16px; padding: 14px 32px; }
 
+  /* ===== EMAIL MODAL ===== */
+  .email-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .email-modal-backdrop.show { display: flex; }
+  .email-modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 32px 28px;
+    max-width: 460px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  .email-modal h2 {
+    color: var(--accent);
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .email-modal p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+  .email-modal input[type="email"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .email-modal input[type="email"]:focus {
+    border-color: var(--accent);
+  }
+  .email-modal .fn-btn {
+    width: 100%;
+    margin-top: 14px;
+    font-size: 15px;
+    padding: 14px 16px;
+  }
+  .email-modal .fn-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .email-error {
+    color: var(--red);
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
+  }
+  .email-fineprint {
+    color: var(--muted);
+    font-size: 12px;
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  .email-modal-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 10px;
+  }
+  .email-modal-close:hover { color: var(--text); }
+
   /* ===== DISCLAIMER ===== */
   .disclaimer {
     margin-top: 28px;
@@ -768,8 +852,30 @@
   <!-- CTA -->
   <div class="cta">
     <h2>You know your number. Now what?</h2>
-    <p>Knowing your Freedom Number is step one. The full Catch-Up dashboard shows you which assets could realistically close your gap on your timeline, what your monthly investing would have produced, and how to harvest gains when the time comes. Free, no signup.</p>
-    <a class="fn-btn" href="https://catchup.freedomlife3.com" target="_blank" rel="noopener">Open the Full Catch-Up Dashboard →</a>
+    <p>The next step is to find out which assets can realistically get you there on your timeline. Click below and we'll open the Freedom Path Explorer with your numbers already loaded.</p>
+    <button class="fn-btn" id="ctaExploreBtn" type="button">Now Find Out What Assets Can Get You To Your Freedom Number →</button>
+  </div>
+
+  <!-- EMAIL CAPTURE MODAL -->
+  <div class="email-modal-backdrop" id="emailModalBackdrop" aria-hidden="true">
+    <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
+      <button class="email-modal-close" id="emailModalClose" aria-label="Close">×</button>
+      <h2 id="emailModalTitle">One last step</h2>
+      <p>Enter your email and we'll open the Freedom Path Explorer with your Freedom Number and required return already filled in.</p>
+      <form id="emailForm" novalidate>
+        <input
+          type="email"
+          id="emailInput"
+          placeholder="you@example.com"
+          required
+          autocomplete="email"
+          inputmode="email"
+        >
+        <div class="email-error" id="emailError"></div>
+        <button type="submit" class="fn-btn" id="emailSubmitBtn">Open Freedom Path Explorer →</button>
+      </form>
+      <div class="email-fineprint">We use your email to send you the catch-up content series. Unsubscribe any time.</div>
+    </div>
   </div>
 
   <!-- DISCLAIMER -->
@@ -1088,6 +1194,90 @@
       const mathEl = document.getElementById('fnMath');
       mathEl.classList.toggle('show');
       document.getElementById('fnShowMath').textContent = mathEl.classList.contains('show') ? 'Hide the Math' : 'Show the Math';
+    });
+
+    // CTA + email gate + handoff to Freedom Path Explorer
+    const EXPLORER_URL = 'https://jscott-62.github.io/catchup-freedom-path/';
+    const backdrop = document.getElementById('emailModalBackdrop');
+    const emailInput = document.getElementById('emailInput');
+    const emailError = document.getElementById('emailError');
+    const emailForm = document.getElementById('emailForm');
+    const emailSubmitBtn = document.getElementById('emailSubmitBtn');
+
+    function openModal() {
+      // Block opening until the calculator has produced numbers
+      if (!_fn.calculatedFN || _fn.calculatedFN <= 0) {
+        alert('Fill in your expenses and income above so we can calculate your Freedom Number first.');
+        return;
+      }
+      emailError.textContent = '';
+      backdrop.classList.add('show');
+      setTimeout(() => emailInput.focus(), 50);
+    }
+    function closeModal() {
+      backdrop.classList.remove('show');
+    }
+
+    document.getElementById('ctaExploreBtn').addEventListener('click', openModal);
+    document.getElementById('emailModalClose').addEventListener('click', closeModal);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && backdrop.classList.contains('show')) closeModal();
+    });
+
+    function isValidEmail(s) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+    }
+
+    // Stubbed email-capture POST. Swap GHL_WEBHOOK_URL with the real
+    // GoHighLevel inbound-webhook URL when ready. Resolves regardless of
+    // network result so the user always continues to the Explorer.
+    async function captureEmail(email) {
+      const GHL_WEBHOOK_URL = '';  // TODO: paste GHL inbound webhook URL
+      const payload = {
+        email: email,
+        source: 'freedom-number-calculator',
+        freedomNumber: _fn.calculatedFN,
+        requiredReturn: _fn.calculatedRR,
+        timelineYears: _fn.spYears,
+        monthlyInvesting: _fn.spMonthly
+      };
+      console.log('[email capture]', payload);
+      if (!GHL_WEBHOOK_URL) return true;
+      try {
+        await fetch(GHL_WEBHOOK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          mode: 'no-cors'
+        });
+      } catch (e) {
+        console.warn('email capture POST failed (continuing anyway):', e);
+      }
+      return true;
+    }
+
+    emailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      if (!isValidEmail(email)) {
+        emailError.textContent = 'Please enter a valid email address.';
+        emailInput.focus();
+        return;
+      }
+      emailError.textContent = '';
+      emailSubmitBtn.disabled = true;
+      emailSubmitBtn.textContent = 'Opening...';
+
+      await captureEmail(email);
+
+      const params = new URLSearchParams({
+        fn: String(_fn.calculatedFN),
+        rr: String(_fn.calculatedRR),
+        years: String(_fn.spYears),
+        monthly: String(_fn.spMonthly)
+      });
+      window.location.href = EXPLORER_URL + '?' + params.toString();
     });
   }
 
