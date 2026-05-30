@@ -368,25 +368,11 @@
     color: var(--accent);
     transition: color 0.15s;
   }
-  .rr-headline-value.index-zone { color: var(--blue); }
-  .rr-headline-value.growth-zone { color: var(--accent); }
-  .rr-headline-value.concentrated-zone { color: #fb923c; }
   .rr-headline-real {
     font-size: 14px;
     color: var(--muted);
     font-weight: 600;
   }
-  .rr-headline-zone {
-    margin-top: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-  }
-  .rr-headline-zone.index-zone { color: var(--blue); }
-  .rr-headline-zone.growth-zone { color: var(--accent); }
-  .rr-headline-zone.concentrated-zone { color: #fb923c; }
 
   /* Info icon + collapsible explainer */
   .info-icon-btn {
@@ -718,14 +704,13 @@
         Fill in the fields above to calculate your personalized Freedom Number.
       </div>
 
-      <!-- Required return as a co-headline. Drives the asset decision. -->
+      <!-- Required return as a co-headline -->
       <div class="rr-headline">
         <div class="rr-headline-label">Required Annual Return</div>
         <div class="rr-headline-row">
           <div class="rr-headline-value" id="rrHeadlineValue">...</div>
           <div class="rr-headline-real" id="rrHeadlineReal"></div>
         </div>
-        <div class="rr-headline-zone" id="rrHeadlineZone"></div>
         <div class="rr-headline-hint" id="rrHeadlineHint">Enter your savings and timeline above to see what return you need.</div>
       </div>
 
@@ -992,64 +977,34 @@
     // Co-headline display in the result panel (the focal point of the page)
     const rrBigEl = document.getElementById('rrHeadlineValue');
     const rrBigRealEl = document.getElementById('rrHeadlineReal');
-    const rrBigZoneEl = document.getElementById('rrHeadlineZone');
     const rrBigHintEl = document.getElementById('rrHeadlineHint');
 
-    function setRR(text, color, realStr, zoneLabel, hintHtml, zoneClass) {
+    function setRR(text, color, realStr, hintHtml) {
       if (rrEl) { rrEl.textContent = text; rrEl.style.color = color; }
       if (rrHintEl) rrHintEl.innerHTML = hintHtml;
       if (rrBigEl) {
         rrBigEl.textContent = text;
-        rrBigEl.className = 'rr-headline-value' + (zoneClass ? ' ' + zoneClass : '');
+        rrBigEl.className = 'rr-headline-value';
+        rrBigEl.style.color = color;
       }
       if (rrBigRealEl) rrBigRealEl.textContent = realStr || '';
-      if (rrBigZoneEl) {
-        rrBigZoneEl.textContent = zoneLabel || '';
-        rrBigZoneEl.className = 'rr-headline-zone' + (zoneClass ? ' ' + zoneClass : '');
-      }
       if (rrBigHintEl) rrBigHintEl.innerHTML = hintHtml;
     }
 
-    // Asset-class tier mapping. Each tier is a signpost to which kind of
-    // asset historically could have delivered that return, NOT an alarm.
-    function getRRTier(pct) {
-      if (pct <= 12) return {
-        zoneClass: 'index-zone',
-        zoneLabel: 'Index-fund territory',
-        color: 'var(--blue)',
-        action: 'A broad S&P 500 or total-market index fund has historically delivered returns in this range.'
-      };
-      if (pct <= 22) return {
-        zoneClass: 'growth-zone',
-        zoneLabel: 'Growth-stock territory',
-        color: 'var(--accent)',
-        action: 'Traditional indexes alone are unlikely to reach this. Historically this required tilting toward growth-stock ETFs like QQQ or concentrated bets on tech leaders.'
-      };
-      return {
-        zoneClass: 'concentrated-zone',
-        zoneLabel: 'Bitcoin / concentrated bet territory',
-        color: '#fb923c',
-        action: 'Historically only assets like Bitcoin or concentrated positions in mega-winners like NVDA have delivered returns this high. Open the full Catch-Up dashboard to see which assets cleared this bar.'
-      };
-    }
-
     if (result.freedomNumber === 0) {
-      setRR('...', 'var(--accent)', '', '', 'Enter your numbers above to see your required return.', null);
+      setRR('...', 'var(--accent)', '', 'Enter your numbers above to see your required return.');
     } else if (_fn.spSavings >= targetFN) {
-      setRR('0%', 'var(--green)', '', 'Already there',
-        `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`,
-        'index-zone');
+      setRR('0%', 'var(--green)', '',
+        `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`);
     } else if (rrPct >= 100) {
-      setRR('100%+', '#fb923c', '', 'Out of range',
-        `No realistic asset delivers this. Consider more years, higher monthly investment${showInflation ? ', lower inflation assumption' : ''}, or a lower Freedom Number target.`,
-        'concentrated-zone');
+      setRR('100%+', 'var(--accent)', '',
+        `Consider more years, higher monthly investment${showInflation ? ', a lower inflation assumption' : ''}, or a lower Freedom Number target.`);
     } else {
-      const tier = getRRTier(rrPct);
       const realStr = showInflation ? '(' + realReturnPct + '% after inflation)' : '';
       const hint = showInflation
-        ? `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. That is <strong>${realReturnPct}% after-inflation growth</strong> in your real buying power. ${tier.action}`
-        : `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. ${tier.action}`;
-      setRR(rrPct + '%', tier.color, realStr, tier.zoneLabel, hint, tier.zoneClass);
+        ? `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. That is <strong>${realReturnPct}% after-inflation growth</strong> in your real buying power.`
+        : `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`;
+      setRR(rrPct + '%', 'var(--accent)', realStr, hint);
     }
   }
 
