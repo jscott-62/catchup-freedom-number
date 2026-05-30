@@ -398,6 +398,41 @@
   }
   .rr-headline-hint strong { color: var(--accent); }
 
+  /* Inflation toggle button */
+  .inflation-toggle-wrap {
+    text-align: center;
+    margin-top: 18px;
+  }
+  .inflation-toggle-btn {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .inflation-toggle-btn:hover {
+    border-color: var(--accent);
+    border-style: solid;
+    color: var(--accent);
+  }
+  .inflation-toggle-btn.active {
+    border-color: var(--accent);
+    border-style: solid;
+    color: var(--accent);
+    background: rgba(245, 158, 11, 0.05);
+  }
+  .inflation-toggle-btn .icon { margin-right: 6px; }
+
+  /* When inflation is hidden, collapse the block and the today-ref */
+  .fn-result.hide-inflation .inflation-block,
+  .fn-result.hide-inflation .fn-value-today-ref {
+    display: none !important;
+  }
+
   /* ===== CTA SECTION ===== */
   .cta {
     margin-top: 28px;
@@ -604,7 +639,7 @@
     </div>
 
     <!-- RESULT -->
-    <div class="fn-result">
+    <div class="fn-result hide-inflation" id="fnResultPanel">
       <div class="fn-label" id="fnHeadlineLabel">Your Freedom Number</div>
       <div class="fn-value-row">
         <div class="fn-value" id="fnValue">$0</div>
@@ -623,6 +658,12 @@
         </div>
         <div class="rr-headline-zone" id="rrHeadlineZone"></div>
         <div class="rr-headline-hint" id="rrHeadlineHint">Enter your savings and timeline above to see what return you need.</div>
+      </div>
+
+      <div class="inflation-toggle-wrap">
+        <button class="inflation-toggle-btn" id="inflationToggleBtn">
+          <span class="icon">📉</span><span id="inflationToggleText">Show Inflation Impact →</span>
+        </button>
       </div>
 
       <div class="inflation-block">
@@ -684,6 +725,7 @@
     spMonthly: 500,
     spYears: 15,
     inflationRate: 3,
+    showInflation: false,
     calculatedFN: 0,
     calculatedRR: 0
   };
@@ -787,10 +829,13 @@
     const mathEl = document.getElementById('fnMath');
     if (!valueEl) return;
 
-    // Headline number: future-nominal when inflation + years are set,
-    // today's-dollars otherwise. Today's-dollars becomes the small ref line.
-    const showFuture = result.freedomNumber > 0 && inflPct > 0 && years > 0;
-    if (showFuture) {
+    // Headline number depends on whether the user has opted into seeing
+    // the inflation-adjusted view. Default is today's-dollars (calmer).
+    const showInflation = !!_fn.showInflation && result.freedomNumber > 0 && inflPct > 0 && years > 0;
+    const panelEl = document.getElementById('fnResultPanel');
+    if (panelEl) panelEl.classList.toggle('hide-inflation', !showInflation);
+
+    if (showInflation) {
       valueEl.textContent = '$' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
       headlineLabelEl.textContent = 'Your Freedom Number in ' + years + ' year' + (years !== 1 ? 's' : '') + ' (at ' + inflPct + '% inflation)';
       todayRefEl.textContent = '≈ $' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' in today\'s purchasing power';
@@ -799,6 +844,19 @@
       valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
       headlineLabelEl.textContent = 'Your Freedom Number';
       todayRefEl.style.display = 'none';
+    }
+
+    // Update the toggle button label
+    const togBtn = document.getElementById('inflationToggleBtn');
+    const togTxt = document.getElementById('inflationToggleText');
+    if (togBtn && togTxt) {
+      if (_fn.showInflation) {
+        togBtn.classList.add('active');
+        togTxt.textContent = 'Hide Inflation Impact';
+      } else {
+        togBtn.classList.remove('active');
+        togTxt.textContent = 'Show Inflation Impact →';
+      }
     }
 
     const totalEl = document.getElementById('expDetailedTotalValue');
@@ -811,7 +869,7 @@
       breakdownEl.innerHTML = `Based on <strong>$${result.annualExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}/year</strong> in retirement expenses, <strong>$${result.annualIncome.toLocaleString(undefined, {maximumFractionDigits: 0})}/year</strong> in guaranteed income, and a <strong>${wdRatePct}% withdrawal rate</strong>.`;
     }
 
-    mathEl.innerHTML = `
+    let mathHtml = `
       <div class="fn-math-row"><span>Current monthly expenses</span><span>$${result.monthlyExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
       <div class="fn-math-row"><span>x Retirement adjustment</span><span>x ${(_fn.expLifestyle * 100).toFixed(0)}%</span></div>
       <div class="fn-math-row"><span>Projected retirement monthly</span><span>$${result.adjustedMonthly.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
@@ -819,13 +877,17 @@
       <div class="fn-math-row"><span style="color:var(--green)">- Annual guaranteed income</span><span style="color:var(--green)">-$${result.annualIncome.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
       <div class="fn-math-row"><span>Annual gap (what savings must cover)</span><span>$${result.annualGap.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
       <div class="fn-math-row"><span>/ Withdrawal rate</span><span>/ ${wdRatePct}%</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number (today)</span><span>$${result.freedomNumber.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>$${result.freedomNumber.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+    if (showInflation) {
+      mathHtml += `
       <div class="fn-math-row"><span>x Inflation over ${years}y at ${inflPct}%</span><span>x ${inflFactor.toFixed(2)}</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number (future nominal)</span><span>$${freedomNumberFuture.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-    `;
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number (future nominal)</span><span>$${freedomNumberFuture.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+    }
+    mathEl.innerHTML = mathHtml;
 
-    // Required return now targets the inflation-adjusted FN, not today's
-    const targetFN = freedomNumberFuture > 0 ? freedomNumberFuture : result.freedomNumber;
+    // Required return targets the inflation-adjusted FN only when the
+    // user has opted into seeing inflation. Otherwise targets today's.
+    const targetFN = showInflation ? freedomNumberFuture : result.freedomNumber;
     const rrDecimal = calcRequiredReturnFromFN(targetFN, _fn.spSavings, _fn.spMonthly, _fn.spYears);
     const rrPct = Math.round(rrDecimal * 100);
     _fn.calculatedRR = rrPct;
@@ -882,22 +944,19 @@
       setRR('...', 'var(--accent)', '', '', 'Enter your numbers above to see your required return.', null);
     } else if (_fn.spSavings >= targetFN) {
       setRR('0%', 'var(--green)', '', 'Already there',
-        `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your inflation-adjusted Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`,
+        `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`,
         'index-zone');
     } else if (rrPct >= 100) {
       setRR('100%+', '#fb923c', '', 'Out of range',
-        `No realistic asset delivers this at ${inflPct}% inflation. Consider more years, higher monthly investment, lower inflation assumption, or a lower Freedom Number target.`,
+        `No realistic asset delivers this. Consider more years, higher monthly investment${showInflation ? ', lower inflation assumption' : ''}, or a lower Freedom Number target.`,
         'concentrated-zone');
     } else {
       const tier = getRRTier(rrPct);
-      setRR(
-        rrPct + '%',
-        tier.color,
-        '(' + realReturnPct + '% real after ' + inflPct + '% inflation)',
-        tier.zoneLabel,
-        `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}% nominal</strong> to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. ${tier.action}`,
-        tier.zoneClass
-      );
+      const realStr = showInflation ? '(' + realReturnPct + '% real after ' + inflPct + '% inflation)' : '';
+      const hint = showInflation
+        ? `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}% nominal</strong> to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. ${tier.action}`
+        : `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>. ${tier.action}`;
+      setRR(rrPct + '%', tier.color, realStr, tier.zoneLabel, hint, tier.zoneClass);
     }
   }
 
@@ -939,6 +998,16 @@
       render();
       debounceSave();
     });
+
+    // Toggle for showing/hiding inflation impact
+    const togBtn = document.getElementById('inflationToggleBtn');
+    if (togBtn) {
+      togBtn.addEventListener('click', () => {
+        _fn.showInflation = !_fn.showInflation;
+        render();
+        debounceSave();
+      });
+    }
 
     document.getElementById('expToggleSimple').addEventListener('click', () => {
       _fn.expMode = 'simple';
