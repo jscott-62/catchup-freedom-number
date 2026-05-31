@@ -1275,7 +1275,8 @@
         fn: String(_fn.calculatedFN),
         rr: String(_fn.calculatedRR),
         years: String(_fn.spYears),
-        monthly: String(_fn.spMonthly)
+        monthly: String(_fn.spMonthly),
+        initial: String(_fn.spSavings || 0)
       });
       window.location.href = EXPLORER_URL + '?' + params.toString();
     });
