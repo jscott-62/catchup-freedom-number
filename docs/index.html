@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Freedom Number Calculator | The Great Catch-Up</title>
-<meta name="description" content="Calculate the real number you need saved to retire. Not a guess. Built from your actual expenses, your Social Security, and your timeline.">
+<title>The Freedom Number Calculator</title>
 <style>
   :root {
     --bg: #0f172a;
@@ -22,672 +21,198 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: var(--bg);
     color: var(--text);
-    padding: 24px;
-    padding-bottom: 60px;
+    padding: 32px 20px;
     min-height: 100vh;
-  }
-  .container { max-width: 1200px; margin: 0 auto; }
-
-  /* ===== HEADER ===== */
-  .header {
-    text-align: center;
-    margin-bottom: 28px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border);
-  }
-  .header h1 {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 8px;
-  }
-  .header .subtitle {
-    color: var(--text);
-    font-size: 16px;
-    max-width: 620px;
-    margin: 0 auto;
     line-height: 1.5;
   }
-  .header .eyebrow {
-    color: var(--muted);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 700;
+  .container { max-width: 720px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 32px; }
+  header h1 {
+    font-size: 30px;
+    color: var(--accent);
     margin-bottom: 10px;
+    font-weight: 800;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.55;
   }
 
-  .intro {
-    margin-bottom: 20px;
-    padding: 16px 20px;
-    background: rgba(245, 158, 11, 0.06);
-    border: 1px solid rgba(245, 158, 11, 0.2);
-    border-radius: 12px;
-    font-size: 14.5px;
-    line-height: 1.6;
-  }
-  .intro strong { color: var(--accent); }
-
-  /* ===== FREEDOM NUMBER BUILDER ===== */
-  .fn-builder {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  .fn-section {
+  .card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
   }
-  .fn-section h3 {
-    font-size: 14px;
-    color: var(--accent);
+
+  .card h2 {
+    font-size: 13px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+
+  /* ===== INPUTS ===== */
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 600;
     margin-bottom: 6px;
   }
-  .fn-section .fn-sub {
+  .field .hint {
+    color: var(--muted);
     font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 16px;
-    line-height: 1.5;
-  }
-  .fn-field { margin-bottom: 14px; }
-  .fn-field label {
-    display: block;
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 4px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .fn-field input[type="number"],
-  .fn-field select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-size: 15px;
-    font-weight: 600;
-    outline: none;
-  }
-  .fn-field input[type="number"]:focus,
-  .fn-field select:focus { border-color: var(--accent); }
-  .fn-field .hint {
-    display: block;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 4px;
-    font-style: italic;
-  }
-  .fn-toggle {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 14px;
-  }
-  .fn-toggle button {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .fn-toggle button.active {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
-  }
-  .fn-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-    cursor: pointer;
-    margin-top: 8px;
-  }
-  .fn-checkbox input {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-  .fn-result {
-    grid-column: 1 / -1;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.03));
-    border: 2px solid rgba(245, 158, 11, 0.4);
-    border-radius: 12px;
-    padding: 28px;
-    text-align: center;
-  }
-  .fn-result .fn-label {
-    font-size: 13px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
     margin-bottom: 8px;
-    font-weight: 600;
   }
-  .fn-result .fn-value {
-    font-size: 56px;
-    font-weight: 800;
-    color: var(--accent);
-    line-height: 1;
-    margin-bottom: 12px;
-  }
-  .fn-result .fn-breakdown {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.7;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .fn-result .fn-breakdown strong { color: var(--accent); }
-  .fn-result .fn-actions {
+  .input-wrap {
     display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-  .fn-btn {
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .fn-btn:hover { opacity: 0.9; }
-  .fn-btn.secondary {
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-  }
-  .fn-math {
-    display: none;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-    text-align: left;
-    font-size: 13px;
-    color: var(--muted);
-    font-family: ui-monospace, monospace;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .fn-math.show { display: block; }
-  .fn-math .fn-math-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-  }
-  .fn-math .fn-math-total {
-    border-top: 1px dashed var(--border);
-    margin-top: 4px;
-    padding-top: 8px;
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  /* ===== INFLATION SLIDER ===== */
-  .inflation-block {
-    margin-top: 20px;
-    padding-top: 18px;
-    border-top: 1px solid rgba(245, 158, 11, 0.25);
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: left;
-  }
-  .inflation-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 12px;
-  }
-  .inflation-label {
-    font-size: 13px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-  }
-  .inflation-value {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--accent);
-  }
-  .inflation-slider {
-    width: 100%;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    outline: none;
-    cursor: pointer;
-  }
-  .inflation-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 22px;
-    height: 22px;
-    background: var(--accent);
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid var(--bg);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  }
-  .inflation-slider::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
-    background: var(--accent);
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid var(--bg);
-  }
-  .inflation-ticks {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 6px;
-  }
-  .inflation-explainer {
-    margin-top: 14px;
-    padding: 12px 14px;
-    background: rgba(245, 158, 11, 0.06);
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--text);
-  }
-  .inflation-explainer strong { color: var(--accent); }
-  .fn-value-row {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    margin-bottom: 12px;
-  }
-  .fn-value-today-ref {
-    font-size: 13px;
-    color: var(--muted);
-    font-weight: 500;
-    margin-top: 4px;
-  }
-
-  /* Withdrawal strategy toggle (4% Rule vs Bucket Strategy) */
-  .strategy-toggle {
-    display: inline-flex;
-    margin: 8px 0 14px;
-    padding: 3px;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-  }
-  .strategy-btn {
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    padding: 7px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .strategy-btn:hover { color: var(--text); }
-  .strategy-btn.active {
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  /* Bucket Strategy inline inputs */
-  .bucket-inputs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin: 14px 0 12px;
-    padding: 12px 14px;
-    background: rgba(59, 130, 246, 0.06);
-    border: 1px solid rgba(59, 130, 246, 0.25);
-    border-radius: 10px;
-  }
-  .bucket-input-field { display: flex; flex-direction: column; gap: 5px; }
-  .bucket-input-field label {
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    font-weight: 600;
-  }
-  .bucket-input-row { display: flex; align-items: center; gap: 6px; }
-  .bucket-input-row input {
-    flex: 1;
     background: var(--bg);
     border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 6px;
-    padding: 7px 10px;
-    font-size: 14px;
-    font-weight: 600;
-    outline: none;
+    border-radius: 10px;
+    padding: 0 14px;
     transition: border-color 0.15s;
   }
-  .bucket-input-row input:focus { border-color: var(--accent); }
-  .bucket-input-row span { color: var(--muted); font-size: 13px; }
-
-  /* Cross-strategy reference line ("Under [other strategy], you'd need $X") */
-  .strategy-reference {
-    font-size: 13px;
+  .input-wrap:focus-within { border-color: var(--accent); }
+  .input-wrap .prefix, .input-wrap .suffix {
     color: var(--muted);
-    margin-top: 8px;
-    padding: 8px 12px;
-    background: rgba(0,0,0,0.18);
-    border-left: 3px solid rgba(245, 158, 11, 0.5);
-    border-radius: 4px;
-  }
-  .strategy-reference strong { color: var(--text); }
-
-  /* Bucket Strategy footnote */
-  .bucket-footnote {
-    margin-top: 18px;
-    padding: 16px 18px;
-    background: rgba(0,0,0,0.18);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-  .bucket-footnote h4 {
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    margin-bottom: 10px;
-  }
-  .bucket-footnote p {
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.55;
-    margin-bottom: 8px;
-  }
-  .bucket-footnote ul {
-    margin: 0;
-    padding-left: 18px;
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.55;
-  }
-  .bucket-footnote li { margin-bottom: 6px; }
-  .bucket-footnote strong { color: var(--text); }
-
-  @media (max-width: 600px) {
-    .bucket-inputs { grid-template-columns: 1fr; }
-  }
-
-  /* 'What could change?' levers — surfaced when required return is high */
-  .levers-panel {
-    margin-top: 18px;
-    padding: 18px 20px;
-    background: rgba(245, 158, 11, 0.06);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 12px;
-  }
-  .levers-header { margin-bottom: 14px; }
-  .levers-title {
     font-size: 15px;
-    font-weight: 700;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .levers-sub {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-  .levers-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .lever {
-    background: rgba(0,0,0,0.25);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
-  .lever-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
     font-weight: 600;
-    margin-bottom: 4px;
+    padding: 0 4px;
   }
-  .lever-action {
-    font-size: 13px;
+  .input-wrap input {
+    flex: 1;
+    background: transparent;
+    border: none;
     color: var(--text);
+    font-size: 16px;
     font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .lever-result {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
+    padding: 14px 4px;
+    outline: none;
     font-variant-numeric: tabular-nums;
+    width: 100%;
   }
-  .lever-from {
-    font-size: 13px;
-    color: var(--muted);
-    text-decoration: line-through;
-  }
-  .lever-arrow { color: var(--muted); font-size: 12px; }
-  .lever-to {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--green);
-  }
-  .lever-to.still-high { color: var(--accent); }
-  @media (max-width: 600px) {
-    .levers-grid { grid-template-columns: 1fr; }
-  }
+  .input-wrap input::-webkit-outer-spin-button,
+  .input-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .input-wrap input[type=number] { -moz-appearance: textfield; }
 
-  /* Required return as co-headline */
-  .rr-headline {
-    margin-top: 20px;
-    padding: 18px 22px;
-    background: rgba(15, 23, 42, 0.45);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
+  /* ===== RESULT ===== */
+  .result-card {
+    background: linear-gradient(180deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02));
+    border-color: rgba(245, 158, 11, 0.35);
   }
-  .rr-headline-label {
-    font-size: 12px;
-    color: var(--muted);
+  .result-block { margin-bottom: 24px; }
+  .result-block:last-of-type { margin-bottom: 16px; }
+  .result-label {
+    font-size: 13px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.7px;
+    color: var(--muted);
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
-  .rr-headline-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .rr-headline-value {
+  .result-value {
     font-size: 48px;
     font-weight: 800;
-    line-height: 1;
     color: var(--accent);
-    transition: color 0.15s;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
   }
-  .rr-headline-real {
-    font-size: 14px;
+  .result-rr .result-value { color: var(--text); }
+  .result-hint {
     color: var(--muted);
-    font-weight: 600;
-  }
-
-  /* Info icon + collapsible explainer */
-  .info-icon-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: transparent;
-    border: 1px solid var(--muted);
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 8px;
-    transition: all 0.15s;
-    vertical-align: middle;
-  }
-  .info-icon-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .info-icon-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--bg);
-  }
-  .info-explainer {
-    display: none;
-    margin-top: 12px;
-    padding: 14px 18px;
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid var(--border);
-    border-radius: 8px;
     font-size: 13px;
-    line-height: 1.6;
-    color: var(--text);
-    text-align: left;
-  }
-  .info-explainer.show { display: block; }
-  .info-explainer strong { color: var(--accent); }
-  .info-explainer h4 {
-    color: var(--accent);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 10px;
-    margin-bottom: 4px;
-  }
-  .info-explainer h4:first-child { margin-top: 0; }
-  .info-explainer ul {
-    list-style: none;
-    padding: 0;
-    margin: 4px 0;
-  }
-  .info-explainer li {
-    padding: 2px 0;
-    padding-left: 14px;
-    position: relative;
-  }
-  .info-explainer li::before {
-    content: '•';
-    color: var(--accent);
-    position: absolute;
-    left: 0;
-  }
-
-  .rr-headline-hint {
-    font-size: 13px;
-    color: var(--text);
     line-height: 1.55;
-    margin-top: 10px;
+  }
+  .result-hint strong { color: var(--text); }
+
+  .show-math-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .show-math-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  .math-block {
+    display: none;
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .math-block.show { display: block; }
+  .math-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .math-row.total {
+    border-top: 1px solid var(--border);
+    margin-top: 6px;
+    padding-top: 10px;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  /* ===== CTA ===== */
+  .cta-card {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.02));
+    border-color: rgba(59, 130, 246, 0.3);
+    text-align: center;
+  }
+  .cta-card h3 {
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .cta-card p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 18px;
     max-width: 480px;
     margin-left: auto;
     margin-right: auto;
+    line-height: 1.55;
   }
-  .rr-headline-hint strong { color: var(--accent); }
-
-  /* Inflation toggle button */
-  .inflation-toggle-wrap {
-    text-align: center;
-    margin-top: 18px;
-  }
-  .inflation-toggle-btn {
-    background: transparent;
-    border: 1px dashed var(--border);
-    color: var(--muted);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .inflation-toggle-btn:hover {
-    border-color: var(--accent);
-    border-style: solid;
-    color: var(--accent);
-  }
-  .inflation-toggle-btn.active {
-    border-color: var(--accent);
-    border-style: solid;
-    color: var(--accent);
-    background: rgba(245, 158, 11, 0.05);
-  }
-  .inflation-toggle-btn .icon { margin-right: 6px; }
-
-  /* When inflation is hidden, collapse the block and the today-ref */
-  .fn-result.hide-inflation .inflation-block,
-  .fn-result.hide-inflation .fn-value-today-ref {
-    display: none !important;
-  }
-
-  /* ===== CTA SECTION ===== */
-  .cta {
-    margin-top: 28px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(245, 158, 11, 0.06));
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    border-radius: 12px;
-    padding: 32px 28px;
-    text-align: center;
-  }
-  .cta h2 {
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 10px;
-  }
-  .cta p {
-    color: var(--muted);
+  .cta-btn {
+    background: var(--accent);
+    color: #0f172a;
+    border: none;
+    padding: 16px 28px;
+    border-radius: 10px;
     font-size: 15px;
-    line-height: 1.6;
-    max-width: 560px;
-    margin: 0 auto 20px auto;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    line-height: 1.3;
+    max-width: 520px;
+    width: 100%;
   }
-  .cta .fn-btn { font-size: 16px; padding: 14px 32px; }
+  .cta-btn:hover { opacity: 0.92; }
+  .cta-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
   /* ===== EMAIL MODAL ===== */
-  .email-modal-backdrop {
+  .modal-backdrop {
     display: none;
     position: fixed;
     inset: 0;
@@ -697,8 +222,8 @@
     justify-content: center;
     padding: 16px;
   }
-  .email-modal-backdrop.show { display: flex; }
-  .email-modal {
+  .modal-backdrop.show { display: flex; }
+  .modal {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 14px;
@@ -708,18 +233,9 @@
     position: relative;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   }
-  .email-modal h2 {
-    color: var(--accent);
-    font-size: 22px;
-    margin-bottom: 10px;
-  }
-  .email-modal p {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.55;
-    margin-bottom: 18px;
-  }
-  .email-modal input[type="email"] {
+  .modal h2 { color: var(--accent); font-size: 22px; margin-bottom: 10px; text-transform: none; letter-spacing: 0; }
+  .modal p { color: var(--muted); font-size: 14px; line-height: 1.55; margin-bottom: 18px; }
+  .modal input[type="email"] {
     width: 100%;
     background: var(--bg);
     border: 1px solid var(--border);
@@ -730,554 +246,187 @@
     outline: none;
     transition: border-color 0.15s;
   }
-  .email-modal input[type="email"]:focus {
-    border-color: var(--accent);
+  .modal input[type="email"]:focus { border-color: var(--accent); }
+  .modal .cta-btn { width: 100%; margin-top: 14px; }
+  .modal-error { color: var(--red); font-size: 13px; margin-top: 8px; min-height: 18px; }
+  .modal-fineprint { color: var(--muted); font-size: 12px; text-align: center; margin-top: 16px; line-height: 1.5; }
+  .modal-close {
+    position: absolute; top: 10px; right: 14px;
+    background: transparent; border: none; color: var(--muted);
+    font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 10px;
   }
-  .email-modal .fn-btn {
-    width: 100%;
-    margin-top: 14px;
-    font-size: 15px;
-    padding: 14px 16px;
-  }
-  .email-modal .fn-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  .email-error {
-    color: var(--red);
-    font-size: 13px;
-    margin-top: 8px;
-    min-height: 18px;
-  }
-  .email-fineprint {
-    color: var(--muted);
-    font-size: 12px;
-    text-align: center;
-    margin-top: 16px;
-    line-height: 1.5;
-  }
-  .email-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    font-size: 26px;
-    line-height: 1;
-    cursor: pointer;
-    padding: 4px 10px;
-  }
-  .email-modal-close:hover { color: var(--text); }
+  .modal-close:hover { color: var(--text); }
 
   /* ===== DISCLAIMER ===== */
   .disclaimer {
     margin-top: 28px;
-    padding: 20px;
+    padding: 18px 20px;
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     font-size: 12px;
     color: var(--muted);
-    line-height: 1.6;
+    line-height: 1.55;
   }
-  .disclaimer strong { color: var(--red); }
+  .disclaimer strong { color: var(--text); }
 
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 1000px) {
-    .fn-builder { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 700px) {
-    body { padding: 16px; padding-bottom: 50px; }
-    .header h1 { font-size: 26px; }
-    .fn-builder { grid-template-columns: 1fr; }
-    .fn-result .fn-value { font-size: 42px; }
+  @media (max-width: 600px) {
+    body { padding: 20px 14px; }
+    header h1 { font-size: 24px; }
+    .card { padding: 22px 20px; }
+    .result-value { font-size: 38px; }
+    .cta-btn { padding: 14px 20px; font-size: 14px; }
   }
 </style>
 </head>
 <body>
 <div class="container">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="eyebrow">The Great Catch-Up</div>
+  <header>
     <h1>The Freedom Number Calculator</h1>
-    <div class="subtitle">The real number you need saved to retire. Not a guess. Built from your actual expenses, your Social Security, and your timeline.</div>
+    <p>Find out exactly how much you need to retire &mdash; and what annual return your money has to earn to get you there.</p>
+  </header>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <h2>Your Numbers</h2>
+
+    <div class="field">
+      <label for="expMonthly">Current monthly expenses</label>
+      <div class="input-wrap"><span class="prefix">$</span><input type="number" id="expMonthly" min="500" max="50000" step="100" value="6000"></div>
+    </div>
+
+    <div class="field">
+      <label for="lifestyle">Retirement lifestyle adjustment</label>
+      <div class="hint">What you'll spend in retirement, as a percentage of today's expenses. Most people land between 70% and 90%.</div>
+      <div class="input-wrap"><input type="number" id="lifestyle" min="40" max="120" step="5" value="80"><span class="suffix">%</span></div>
+    </div>
+
+    <div class="field">
+      <label for="income">Expected monthly retirement income</label>
+      <div class="hint">Social Security + pension + part-time + rental income, combined.</div>
+      <div class="input-wrap"><span class="prefix">$</span><input type="number" id="income" min="0" max="20000" step="50" value="1800"></div>
+    </div>
+
+    <div class="field">
+      <label for="savings">Current savings invested</label>
+      <div class="hint">Total of your retirement accounts, brokerage, and other invested assets.</div>
+      <div class="input-wrap"><span class="prefix">$</span><input type="number" id="savings" min="0" step="1000" value="50000"></div>
+    </div>
+
+    <div class="field">
+      <label for="monthly">Monthly investing</label>
+      <div class="hint">How much you add to your investments each month.</div>
+      <div class="input-wrap"><span class="prefix">$</span><input type="number" id="monthly" min="0" step="50" value="500"></div>
+    </div>
+
+    <div class="field">
+      <label for="years">Years to retirement</label>
+      <div class="input-wrap"><input type="number" id="years" min="1" max="40" step="1" value="15"><span class="suffix">years</span></div>
+    </div>
   </div>
 
-  <div class="intro">
-    <strong>Your Freedom Number</strong> is the total amount you need saved by retirement to live comfortably. Most calculators make you guess at it. This one helps you build it from the ground up using the 4% rule, adjusted for your real inputs. Nothing you enter leaves your browser.
-  </div>
-
-  <div class="fn-builder">
-    <!-- SECTION 1: Expenses -->
-    <div class="fn-section">
-      <h3>1. Your Current Expenses</h3>
-      <p class="fn-sub">What do you spend TODAY? Start with your current monthly expenses. The Retirement Adjustment below will tune this for your retirement years.</p>
-
-      <div class="fn-toggle">
-        <button id="expToggleSimple" class="active">Simple</button>
-        <button id="expToggleDetailed">Break it down</button>
-      </div>
-
-      <div id="expSimpleMode">
-        <div class="fn-field">
-          <label>Current Monthly Expenses</label>
-          <input type="number" id="expMonthly" min="500" max="50000" step="100" value="6000">
-          <span class="hint">What you spend per month right now on everything</span>
-        </div>
-      </div>
-
-      <div id="expDetailedMode" style="display:none;">
-        <div style="font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 12px; padding: 8px 12px; background: rgba(245, 158, 11, 0.08); border-radius: 6px;">
-          Enter your <strong>current monthly</strong> spending by category. We'll multiply by 12 for the annual total, then the Retirement Adjustment below tunes it for your retirement years.
-        </div>
-        <div class="fn-field">
-          <label>Housing ($/month)</label>
-          <input type="number" id="expHousing" min="0" step="50" value="2000">
-          <span class="hint">Rent or mortgage, property taxes, insurance, maintenance</span>
-        </div>
-        <div class="fn-field">
-          <label>Food &amp; Groceries ($/month)</label>
-          <input type="number" id="expFood" min="0" step="50" value="800">
-        </div>
-        <div class="fn-field">
-          <label>Healthcare &amp; Insurance ($/month)</label>
-          <input type="number" id="expHealth" min="0" step="50" value="1200">
-          <span class="hint">Healthcare costs rise significantly in retirement</span>
-        </div>
-        <div class="fn-field">
-          <label>Transportation ($/month)</label>
-          <input type="number" id="expTransport" min="0" step="50" value="500">
-        </div>
-        <div class="fn-field">
-          <label>Travel &amp; Lifestyle ($/month)</label>
-          <input type="number" id="expTravel" min="0" step="50" value="800">
-          <span class="hint">What makes retirement worth it</span>
-        </div>
-        <div class="fn-field">
-          <label>Other ($/month)</label>
-          <input type="number" id="expOther" min="0" step="50" value="500">
-          <span class="hint">Subscriptions, hobbies, pets, gifts</span>
-        </div>
-        <div class="fn-field" style="padding: 10px 12px; background: var(--bg); border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border);">
-          <span style="font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Total Monthly</span>
-          <span id="expDetailedTotalValue" style="font-size: 18px; font-weight: 700; color: var(--accent);">$5,800</span>
-        </div>
-      </div>
-
-      <div class="fn-field" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-        <label>Retirement Adjustment</label>
-        <select id="expLifestyle">
-          <option value="0.70">I'll spend less (70% of today)</option>
-          <option value="0.80" selected>I'll spend slightly less (80% of today)</option>
-          <option value="1.00">I'll spend about the same (100%)</option>
-          <option value="1.10">I'll spend slightly more (110%)</option>
-          <option value="1.20">I'll spend more (120% of today)</option>
-        </select>
-        <span class="hint">Most retirees spend 70-80% of what they spend now (no commute, kids grown, mortgage often paid). But healthcare goes UP, and travel might too. Adjust based on YOUR plans.</span>
-      </div>
+  <!-- RESULT -->
+  <div class="card result-card">
+    <div class="result-block">
+      <div class="result-label">Your Freedom Number</div>
+      <div class="result-value" id="fnValue">$0</div>
+      <div class="result-hint" id="fnHint">Fill in the fields above to calculate your personalized Freedom Number.</div>
     </div>
 
-    <!-- SECTION 2: Guaranteed Income -->
-    <div class="fn-section">
-      <h3>2. Guaranteed Income in Retirement</h3>
-      <p class="fn-sub">Every dollar of guaranteed income is a dollar your savings doesn't have to produce. This is why including these is critical.</p>
-
-      <div class="fn-field">
-        <label>Social Security (monthly)</label>
-        <input type="number" id="incSocSec" min="0" max="10000" step="50" value="1800">
-        <span class="hint">Look it up at ssa.gov/myaccount. Average is around $1,800.</span>
-      </div>
-
-      <label class="fn-checkbox">
-        <input type="checkbox" id="incSkipSS">
-        I don't want to count on Social Security
-      </label>
-
-      <div class="fn-field" style="margin-top: 16px;">
-        <label>Pension (monthly, if any)</label>
-        <input type="number" id="incPension" min="0" step="50" value="0">
-      </div>
-
-      <div class="fn-field">
-        <label>Rental Income (monthly, if any)</label>
-        <input type="number" id="incRental" min="0" step="50" value="0">
-      </div>
-
-      <div class="fn-field">
-        <label>Part-Time Work Income (monthly)</label>
-        <input type="number" id="incPartTime" min="0" step="50" value="0">
-        <span class="hint">Many retirees work part-time for the first 5-10 years</span>
-      </div>
-
-      <div class="fn-field" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-        <label>Withdrawal Rate</label>
-        <select id="wdRate">
-          <option value="0.03">3%: Very Conservative (40+ year retirement, crash-resistant)</option>
-          <option value="0.04" selected>4%: Standard (Trinity Study, 30-year retirement)</option>
-          <option value="0.05">5%: Aggressive (shorter retirement, comfortable with risk)</option>
-        </select>
-        <span class="hint">Lower rate = higher Freedom Number but more safety. Higher rate = lower target but more risk of running out.</span>
-      </div>
+    <div class="result-block result-rr">
+      <div class="result-label">Required Annual Return</div>
+      <div class="result-value" id="rrValue">&mdash;</div>
+      <div class="result-hint" id="rrHint">This is the return your investments would need to grow at to reach your Freedom Number on your timeline.</div>
     </div>
 
-    <!-- SECTION 3: Starting Point -->
-    <div class="fn-section">
-      <h3>3. Your Starting Point</h3>
-      <p class="fn-sub">Where are you today, and what can you commit to each month? These three inputs plus your Freedom Number determine the annual return rate you need.</p>
-
-      <div class="fn-field">
-        <label>Current Savings</label>
-        <input type="number" id="spSavings" min="0" step="1000" value="50000">
-        <span class="hint">All retirement savings you have today (401k, IRA, brokerage, digital assets)</span>
-      </div>
-
-      <div class="fn-field">
-        <label>Monthly Investment</label>
-        <input type="number" id="spMonthly" min="0" step="50" value="500">
-        <span class="hint">How much you can realistically add each month</span>
-      </div>
-
-      <div class="fn-field">
-        <label>Years to Retirement</label>
-        <input type="number" id="spYears" min="1" max="40" step="1" value="15">
-        <span class="hint">How long you have to build your nest egg</span>
-      </div>
-
-      <div class="fn-field" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
-        <label style="color: var(--accent);">Required Annual Return</label>
-        <div style="font-size: 32px; font-weight: 800; color: var(--accent); margin-top: 4px;" id="spRequiredReturn">...</div>
-        <span class="hint" id="spRequiredReturnHint">Your Freedom Number and these three inputs determine this rate.</span>
-      </div>
-    </div>
-
-    <!-- RESULT -->
-    <div class="fn-result hide-inflation" id="fnResultPanel">
-      <div class="fn-label" id="fnHeadlineLabel">Your Freedom Number</div>
-
-      <!-- Withdrawal strategy: 4% Rule (default), 2-Bucket, or 3-Bucket -->
-      <div class="strategy-toggle" role="tablist" aria-label="Withdrawal strategy">
-        <button class="strategy-btn active" data-strategy="fourpct" role="tab" aria-selected="true">4% Rule</button>
-        <button class="strategy-btn" data-strategy="bucket2" role="tab" aria-selected="false">2-Bucket</button>
-        <button class="strategy-btn" data-strategy="bucket3" role="tab" aria-selected="false">3-Bucket</button>
-      </div>
-
-      <div class="fn-value-row">
-        <div class="fn-value" id="fnValue">$0</div>
-        <div class="fn-value-today-ref" id="fnTodayRef" style="display:none;">≈ $0 in today's purchasing power</div>
-      </div>
-      <div class="fn-breakdown" id="fnBreakdown">
-        Fill in the fields above to calculate your personalized Freedom Number.
-      </div>
-
-      <!-- Bucket inputs — fields shown depend on which bucket strategy is active -->
-      <div class="bucket-inputs" id="bucketInputs" style="display:none;">
-        <div class="bucket-input-field" id="fieldCashYears">
-          <label for="bucketCashYears">Bucket 1 (Cash)</label>
-          <div class="bucket-input-row"><input type="number" id="bucketCashYears" min="0" max="10" step="0.5" value="2"><span>years</span></div>
-        </div>
-        <div class="bucket-input-field" id="fieldStabilityYears">
-          <label for="bucketStabilityYears">Bucket 2 (Stability)</label>
-          <div class="bucket-input-row"><input type="number" id="bucketStabilityYears" min="0" max="15" step="0.5" value="5"><span>years</span></div>
-        </div>
-        <div class="bucket-input-field" id="fieldStabilityReturn">
-          <label for="bucketStabilityReturn">Stability return</label>
-          <div class="bucket-input-row"><input type="number" id="bucketStabilityReturn" min="0" max="10" step="0.5" value="4"><span>% / yr</span></div>
-        </div>
-        <div class="bucket-input-field" id="fieldGrowthReturn">
-          <label for="bucketGrowthReturn">Growth bucket return</label>
-          <div class="bucket-input-row"><input type="number" id="bucketGrowthReturn" min="3" max="30" step="0.5" value="10"><span>% / yr</span></div>
-        </div>
-      </div>
-
-      <!-- Reference line showing the "other" strategy's Freedom Number, so
-           users can see the tradeoff at a glance regardless of which is active. -->
-      <div class="strategy-reference" id="strategyReference" style="display:none;"></div>
-
-      <!-- Required return as a co-headline -->
-      <div class="rr-headline">
-        <div class="rr-headline-label">Required Annual Return</div>
-        <div class="rr-headline-row">
-          <div class="rr-headline-value" id="rrHeadlineValue">...</div>
-          <div class="rr-headline-real" id="rrHeadlineReal"></div>
-        </div>
-        <div class="rr-headline-hint" id="rrHeadlineHint">Enter your savings and timeline above to see what return you need.</div>
-      </div>
-
-      <!-- 'What could change?' levers — only shown when required return is high.
-           Each lever recomputes RR with a single input changed, giving the user
-           four concrete moves they can negotiate with their actual life. -->
-      <div class="levers-panel" id="leversPanel" style="display:none;">
-        <div class="levers-header">
-          <div class="levers-title">What could change?</div>
-          <div class="levers-sub" id="leversSub">A required return this high is hard to count on. Here's what each lever would do to that number — pull one, or combine a few.</div>
-        </div>
-        <div class="levers-grid">
-          <div class="lever" data-lever="years">
-            <div class="lever-label">Extend timeline</div>
-            <div class="lever-action" id="leverYearsAction">+5 years</div>
-            <div class="lever-result"><span class="lever-from" id="leverYearsFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverYearsTo">—</span></div>
-          </div>
-          <div class="lever" data-lever="monthly">
-            <div class="lever-label">Invest more monthly</div>
-            <div class="lever-action" id="leverMonthlyAction">+$300/mo</div>
-            <div class="lever-result"><span class="lever-from" id="leverMonthlyFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverMonthlyTo">—</span></div>
-          </div>
-          <div class="lever" data-lever="expenses">
-            <div class="lever-label">Trim retirement expenses</div>
-            <div class="lever-action" id="leverExpensesAction">−15%</div>
-            <div class="lever-result"><span class="lever-from" id="leverExpensesFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverExpensesTo">—</span></div>
-          </div>
-          <div class="lever" data-lever="parttime">
-            <div class="lever-label">Add part-time income</div>
-            <div class="lever-action" id="leverPartTimeAction">+$1,500/mo</div>
-            <div class="lever-result"><span class="lever-from" id="leverPartTimeFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverPartTimeTo">—</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="inflation-toggle-wrap">
-        <button class="inflation-toggle-btn" id="inflationToggleBtn">
-          <span class="icon">📉</span><span id="inflationToggleText">Show Inflation Impact →</span>
-        </button>
-      </div>
-
-      <div class="inflation-block">
-        <div class="inflation-header">
-          <span class="inflation-label">
-            Inflation Assumption
-            <button class="info-icon-btn" id="inflationInfoBtn" title="What is this?">?</button>
-          </span>
-          <span class="inflation-value" id="inflationValue">3%</span>
-        </div>
-        <input type="range" id="inflationSlider" class="inflation-slider" min="0" max="10" step="0.5" value="3">
-        <div class="inflation-ticks">
-          <span>0%</span><span>2%</span><span>4%</span><span>6%</span><span>8%</span><span>10%</span>
-        </div>
-
-        <div class="info-explainer" id="inflationInfoExplainer">
-          <h4>What inflation does to your number</h4>
-          <p>Inflation is the slow rise in prices over time. A dollar today does not buy what it bought 20 years ago. The same is true going forward: by the time you retire in 15 years, the dollars in your retirement account will buy less than they do now.</p>
-
-          <h4>Why we show two return numbers</h4>
-          <p>Your investment statement will report one return (for example, 21%). That is the number on paper.</p>
-          <p>But inflation eats into that growth. If your account grew 21% but prices went up 3%, only 18% of that growth actually bought you more in real life.</p>
-          <ul>
-            <li><strong>21%</strong>: what your investments need to grow on paper each year</li>
-            <li><strong>18% after inflation</strong>: what your real buying power needs to grow</li>
-          </ul>
-
-          <h4>What inflation rate should you pick?</h4>
-          <ul>
-            <li>The government's official measure (CPI) usually says 2-3%</li>
-            <li>Many people believe real cost-of-living inflation, especially in housing, healthcare, and food, runs more like 6-10%</li>
-            <li>For a stress test, slide up to 10% and see what happens</li>
-          </ul>
-        </div>
-
-        <div class="inflation-explainer">
-          Official CPI runs around 2 to 3 percent. Many people believe the real cost-of-living inflation in housing, healthcare, and food is closer to 6 to 10 percent. Slide higher to see what happens to your number when the dollar is debased.
-        </div>
-      </div>
-
-      <div class="fn-actions">
-        <button class="fn-btn secondary" id="fnShowMath">Show the Math</button>
-      </div>
-      <div class="fn-math" id="fnMath"></div>
-
-      <!-- Bucket-strategy education: shown when either bucket strategy is active -->
-      <div class="bucket-footnote" id="bucketFootnote" style="display:none;">
-        <h4 id="bucketFootnoteTitle">About the Bucket Strategy</h4>
-        <p id="bucketFootnoteIntro">This approach keeps a few years of expenses in cash (money market or treasuries) and the rest in high-return assets that keep compounding through retirement. You refill the cash bucket from growth gains, never selling growth assets at a loss.</p>
-        <p><strong>Three risks to weigh:</strong></p>
-        <ul>
-          <li><strong>Sequence-of-returns risk.</strong> If markets crash for longer than your buffers cover, you may have to sell growth assets at the worst time. The 3-bucket strategy adds a stability bucket (bonds, treasuries) specifically to extend this protection &mdash; usually to 7+ years.</li>
-          <li><strong>Discipline.</strong> When the growth bucket is up, you skim profits to refill cash. When it's down, you don't touch it. The math only works if you actually follow the rules.</li>
-          <li><strong>Return assumptions.</strong> Your growth bucket return is an assumption, not a guarantee. The S&amp;P 500 has averaged ~7% real returns historically; growth-tilted portfolios can be higher but more volatile.</li>
-        </ul>
-      </div>
-    </div>
+    <button class="show-math-btn" id="showMathBtn">Show the math &darr;</button>
+    <div class="math-block" id="mathBlock"></div>
   </div>
 
   <!-- CTA -->
-  <div class="cta">
-    <h2>You know your number. Now what?</h2>
+  <div class="card cta-card">
+    <h3>You know your number. Now what?</h3>
     <p>The next step is to find out which assets can realistically get you there on your timeline. Click below and we'll open the Freedom Path Explorer with your numbers already loaded.</p>
-    <button class="fn-btn" id="ctaExploreBtn" type="button">Now Find Out What Assets Can Get You To Your Freedom Number →</button>
-  </div>
-
-  <!-- EMAIL CAPTURE MODAL -->
-  <div class="email-modal-backdrop" id="emailModalBackdrop" aria-hidden="true">
-    <div class="email-modal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
-      <button class="email-modal-close" id="emailModalClose" aria-label="Close">×</button>
-      <h2 id="emailModalTitle">One last step</h2>
-      <p>Enter your email and we'll open the Freedom Path Explorer with your Freedom Number and required return already filled in.</p>
-      <form id="emailForm" novalidate>
-        <input
-          type="email"
-          id="emailInput"
-          placeholder="you@example.com"
-          required
-          autocomplete="email"
-          inputmode="email"
-        >
-        <div class="email-error" id="emailError"></div>
-        <button type="submit" class="fn-btn" id="emailSubmitBtn">Open Freedom Path Explorer →</button>
-      </form>
-      <div class="email-fineprint">We use your email to send you the catch-up content series. Unsubscribe any time.</div>
-    </div>
+    <button class="cta-btn" id="ctaBtn" type="button">Now Find Out What Assets Can Get You To Your Freedom Number &rarr;</button>
   </div>
 
   <!-- DISCLAIMER -->
   <div class="disclaimer">
-    <strong>Important Disclaimer:</strong> This tool is for educational purposes only. It is not financial advice. The Freedom Number is an estimate based on the inputs you provide and the withdrawal-rate assumption you select. It does not account for inflation, taxes, sequence-of-returns risk, or changes in your circumstances. Always consult with a qualified financial professional before making retirement decisions.
+    <strong>Important Disclaimer:</strong> This tool is for educational purposes only. It is not financial advice. The Freedom Number is an estimate based on the inputs you provide and the 4% withdrawal rule. It does not account for inflation, taxes, sequence-of-returns risk, or changes in your circumstances. Always consult with a qualified financial professional before making retirement decisions.
     <br><br>
     Built for The Great Catch-Up program by J. Scott MacMillan.
   </div>
 
 </div>
 
+<!-- EMAIL CAPTURE MODAL -->
+<div class="modal-backdrop" id="emailModalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="emailModalTitle">
+    <button class="modal-close" id="emailModalClose" aria-label="Close">&times;</button>
+    <h2 id="emailModalTitle">One last step</h2>
+    <p>Enter your email and we'll open the Freedom Path Explorer with your Freedom Number and required return already filled in.</p>
+    <form id="emailForm" novalidate>
+      <input type="email" id="emailInput" placeholder="you@example.com" required autocomplete="email" inputmode="email">
+      <div class="modal-error" id="emailError"></div>
+      <button type="submit" class="cta-btn" id="emailSubmitBtn">Open Freedom Path Explorer &rarr;</button>
+    </form>
+    <div class="modal-fineprint">We use your email to send you the catch-up content series. Unsubscribe any time.</div>
+  </div>
+</div>
+
 <script>
-  const STORAGE_KEY = 'freedom-number-calc';
-  let _fn = {
-    expMode: 'simple',
+(function() {
+  'use strict';
+
+  const STORAGE_KEY = 'freedom-number-lite';
+  const EXPLORER_URL = 'https://jscott-62.github.io/catchup-freedom-path/';
+  const WITHDRAWAL_RATE = 0.04;
+
+  // --- State ---
+  let _state = {
     expMonthly: 6000,
-    expHousing: 2000,
-    expFood: 800,
-    expHealth: 1200,
-    expTransport: 500,
-    expTravel: 800,
-    expOther: 500,
-    expLifestyle: 0.80,
-    incSocSec: 1800,
-    incSkipSS: false,
-    incPension: 0,
-    incRental: 0,
-    incPartTime: 0,
-    wdRate: 0.04,
-    spSavings: 50000,
-    spMonthly: 500,
-    spYears: 15,
-    inflationRate: 3,
-    showInflation: false,
-    // Withdrawal strategy: 'fourpct' (4% rule), 'bucket2' (cash + growth),
-    // or 'bucket3' (cash + stability + growth)
-    strategy: 'fourpct',
-    bucketCashYears: 2,
-    bucketStabilityYears: 5,
-    bucketStabilityReturn: 4,
-    bucketGrowthReturn: 10,
+    lifestyle: 80,
+    income: 1800,
+    savings: 50000,
+    monthly: 500,
+    years: 15,
     calculatedFN: 0,
     calculatedRR: 0
   };
-  let _saveTimer = null;
 
-  function loadSettings() {
+  // --- Helpers ---
+  const $ = (id) => document.getElementById(id);
+  const fmt0 = (n) => '$' + Math.round(n || 0).toLocaleString();
+
+  function loadState() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) Object.assign(_fn, JSON.parse(saved));
+      if (saved) Object.assign(_state, JSON.parse(saved));
     } catch (e) {}
   }
-  function saveSettings() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(_fn)); } catch (e) {}
+  function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(_state)); } catch (e) {}
   }
+  let _saveTimer;
   function debounceSave() {
     clearTimeout(_saveTimer);
-    _saveTimer = setTimeout(saveSettings, 400);
+    _saveTimer = setTimeout(saveState, 400);
   }
 
-  function populateInputs() {
-    document.getElementById('expMonthly').value = _fn.expMonthly;
-    document.getElementById('expHousing').value = _fn.expHousing;
-    document.getElementById('expFood').value = _fn.expFood;
-    document.getElementById('expHealth').value = _fn.expHealth;
-    document.getElementById('expTransport').value = _fn.expTransport;
-    document.getElementById('expTravel').value = _fn.expTravel;
-    document.getElementById('expOther').value = _fn.expOther;
-    document.getElementById('expLifestyle').value = _fn.expLifestyle.toFixed(2);
-    document.getElementById('incSocSec').value = _fn.incSocSec;
-    document.getElementById('incSkipSS').checked = _fn.incSkipSS;
-    document.getElementById('incPension').value = _fn.incPension;
-    document.getElementById('incRental').value = _fn.incRental;
-    document.getElementById('incPartTime').value = _fn.incPartTime;
-    document.getElementById('wdRate').value = _fn.wdRate.toFixed(2);
-    document.getElementById('spSavings').value = _fn.spSavings;
-    document.getElementById('spMonthly').value = _fn.spMonthly;
-    document.getElementById('spYears').value = _fn.spYears;
-    document.getElementById('inflationSlider').value = _fn.inflationRate;
-    document.getElementById('inflationValue').textContent = _fn.inflationRate + '%';
-    if (_fn.expMode === 'detailed') {
-      document.getElementById('expToggleSimple').classList.remove('active');
-      document.getElementById('expToggleDetailed').classList.add('active');
-      document.getElementById('expSimpleMode').style.display = 'none';
-      document.getElementById('expDetailedMode').style.display = 'block';
-    }
-  }
-
-  function calcFreedomNumber(stateOverride) {
-    // Compute against either _fn (default) or a shallow-merged override —
-    // letting the 'What could change?' levers pass spYears/spMonthly/etc.
-    // overrides while still respecting the user's active strategy.
-    const s = stateOverride || _fn;
-    let monthlyExpenses;
-    if (s.expMode === 'detailed') {
-      monthlyExpenses = (s.expHousing || 0) + (s.expFood || 0) + (s.expHealth || 0)
-        + (s.expTransport || 0) + (s.expTravel || 0) + (s.expOther || 0);
-    } else {
-      monthlyExpenses = s.expMonthly || 0;
-    }
-    const adjustedMonthly = monthlyExpenses * (s.expLifestyle || 1);
-    const annualExpenses = adjustedMonthly * 12;
-    const monthlySS = s.incSkipSS ? 0 : (s.incSocSec || 0);
-    const monthlyIncome = monthlySS + (s.incPension || 0) + (s.incRental || 0) + (s.incPartTime || 0);
-    const annualIncome = monthlyIncome * 12;
+  // --- Calculation ---
+  function calcFN() {
+    const adjustedMonthlyExpenses = _state.expMonthly * (_state.lifestyle / 100);
+    const annualExpenses = adjustedMonthlyExpenses * 12;
+    const annualIncome = (_state.income || 0) * 12;
     const annualGap = Math.max(0, annualExpenses - annualIncome);
-
-    // Strategy A: 4% Rule. FN = annualGap / withdrawalRate.
-    const fourPctFN = annualGap / (s.wdRate || 0.04);
-
-    // Shared bucket inputs
-    const cashYears = Math.max(0, s.bucketCashYears || 0);
-    const stabYears = Math.max(0, s.bucketStabilityYears || 0);
-    const stabRetDec = Math.max(0, (s.bucketStabilityReturn || 0) / 100);
-    const growthRetDec = Math.max(0.01, (s.bucketGrowthReturn || 10) / 100);
-
-    // Strategy B: 2-Bucket. Cash buffer (cashYears × annualGap) + growth bucket
-    // large enough that its annual return covers annualGap perpetually.
-    //   B1 = gap × cashYears
-    //   B3 = gap / growthReturn
-    const b2_b1 = annualGap * cashYears;
-    const b2_b3 = annualGap / growthRetDec;
-    const bucket2FN = b2_b1 + b2_b3;
-
-    // Strategy C: 3-Bucket. Cash + stability + growth.
-    // In equilibrium: B2*r2 + B3*r3 = gap (Bucket 1 is just a runway, no income).
-    //   B1 = gap × cashYears
-    //   B2 = gap × stabilityYears
-    //   B3 = gap × (1 − stabilityYears × stabilityReturn) / growthReturn
-    //        capped at 0 if Bucket 2 already generates more than the gap.
-    const b3_b1 = annualGap * cashYears;
-    const b3_b2 = annualGap * stabYears;
-    const b3FactorTop = Math.max(0, 1 - (stabYears * stabRetDec));
-    const b3_b3 = (annualGap * b3FactorTop) / growthRetDec;
-    const bucket3FN = b3_b1 + b3_b2 + b3_b3;
-
-    const strategy = ['fourpct', 'bucket2', 'bucket3'].includes(s.strategy) ? s.strategy : 'fourpct';
-    let freedomNumber = fourPctFN;
-    if (strategy === 'bucket2') freedomNumber = bucket2FN;
-    else if (strategy === 'bucket3') freedomNumber = bucket3FN;
-
-    return {
-      monthlyExpenses, adjustedMonthly, annualExpenses, monthlySS, monthlyIncome, annualIncome, annualGap,
-      freedomNumber, strategy,
-      fourPctFN,
-      bucket2FN, bucket2Cash: b2_b1, bucket2Growth: b2_b3,
-      bucket3FN, bucket3Cash: b3_b1, bucket3Stability: b3_b2, bucket3Growth: b3_b3
-    };
+    const freedomNumber = annualGap / WITHDRAWAL_RATE;
+    return { adjustedMonthlyExpenses, annualExpenses, annualIncome, annualGap, freedomNumber };
   }
 
-  function calcRequiredReturnFromFN(freedomNumber, startingBalance, monthlyBudget, years) {
+  // Bisection: smallest annual return that grows starting + monthly contributions
+  // into freedomNumber over years. Same algorithm as the Pro version.
+  function calcRequiredReturn(freedomNumber, startingBalance, monthlyBudget, years) {
     if (freedomNumber <= 0 || years <= 0) return 0;
     if (startingBalance >= freedomNumber) return 0;
     if (monthlyBudget <= 0 && startingBalance <= 0) return 1;
@@ -1296,466 +445,176 @@
     return (low + high) / 2;
   }
 
+  // --- Render ---
   function render() {
-    const result = calcFreedomNumber();
-    _fn.calculatedFN = result.freedomNumber;
+    const r = calcFN();
+    _state.calculatedFN = r.freedomNumber;
 
-    // Inflation-adjusted target: today's FN compounded at the chosen rate
-    // over the user's years-to-retirement. This is the NOMINAL pile they
-    // need by retirement to preserve today's purchasing power.
-    const inflPct = (typeof _fn.inflationRate === 'number' && !isNaN(_fn.inflationRate)) ? _fn.inflationRate : 3;
-    const years = _fn.spYears || 0;
-    const inflFactor = Math.pow(1 + inflPct / 100, years);
-    const freedomNumberFuture = result.freedomNumber * inflFactor;
-
-    const valueEl = document.getElementById('fnValue');
-    const headlineLabelEl = document.getElementById('fnHeadlineLabel');
-    const todayRefEl = document.getElementById('fnTodayRef');
-    const breakdownEl = document.getElementById('fnBreakdown');
-    const mathEl = document.getElementById('fnMath');
-    if (!valueEl) return;
-
-    // Headline number depends on whether the user has opted into seeing
-    // the inflation-adjusted view. Default is today's-dollars (calmer).
-    const showInflation = !!_fn.showInflation && result.freedomNumber > 0 && inflPct >= 0 && years > 0;
-    const panelEl = document.getElementById('fnResultPanel');
-    if (panelEl) panelEl.classList.toggle('hide-inflation', !showInflation);
-
-    // Headline always shows today's-dollars Freedom Number — the number people
-    // can hold in their head and plan around. When inflation is shown, the
-    // future-dollars equivalent appears as a smaller reference line below it,
-    // so the user sees the inflation impact without leading with the scary
-    // bigger number.
-    valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
-    if (showInflation) {
-      headlineLabelEl.textContent = 'Your Freedom Number (in today\'s dollars)';
-      todayRefEl.textContent = 'In future dollars at ' + inflPct + '% inflation over ' + years + ' year' + (years !== 1 ? 's' : '') + ': ≈ $' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
-      todayRefEl.style.display = 'block';
+    // Freedom Number headline
+    $('fnValue').textContent = fmt0(r.freedomNumber);
+    if (r.freedomNumber === 0) {
+      $('fnHint').innerHTML = 'Your guaranteed income covers your retirement expenses. You technically don\'t need savings to retire, though a cushion is always smart.';
     } else {
-      headlineLabelEl.textContent = 'Your Freedom Number';
-      todayRefEl.style.display = 'none';
+      $('fnHint').innerHTML = `Based on <strong>${fmt0(r.annualExpenses)}/year</strong> in retirement expenses, <strong>${fmt0(r.annualIncome)}/year</strong> in guaranteed income, and the 4% withdrawal rule.`;
     }
 
-    // Update the toggle button label
-    const togBtn = document.getElementById('inflationToggleBtn');
-    const togTxt = document.getElementById('inflationToggleText');
-    if (togBtn && togTxt) {
-      if (_fn.showInflation) {
-        togBtn.classList.add('active');
-        togTxt.textContent = 'Hide Inflation Impact';
-      } else {
-        togBtn.classList.remove('active');
-        togTxt.textContent = 'Show Inflation Impact →';
-      }
-    }
+    // Required Return
+    const rrDec = calcRequiredReturn(r.freedomNumber, _state.savings, _state.monthly, _state.years);
+    const rrPct = Math.round(rrDec * 100);
+    _state.calculatedRR = rrPct;
+    const rrEl = $('rrValue');
+    const rrHintEl = $('rrHint');
 
-    const totalEl = document.getElementById('expDetailedTotalValue');
-    if (totalEl) totalEl.textContent = '$' + result.monthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 });
-
-    const wdRatePct = (_fn.wdRate * 100).toFixed(0);
-    const isB2 = result.strategy === 'bucket2';
-    const isB3 = result.strategy === 'bucket3';
-    const isBucket = isB2 || isB3;
-    const fmt0 = (n) => '$' + (n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
-    if (result.freedomNumber === 0) {
-      breakdownEl.innerHTML = 'Your guaranteed income covers your expenses. You technically don\'t need savings to retire, though a cushion is always smart.';
-    } else if (isB2) {
-      breakdownEl.innerHTML = `2-Bucket: <strong>${fmt0(result.bucket2Cash)}</strong> in a cash buffer (${_fn.bucketCashYears} years of expenses) + <strong>${fmt0(result.bucket2Growth)}</strong> in a growth bucket earning <strong>${_fn.bucketGrowthReturn}%</strong> per year.`;
-    } else if (isB3) {
-      breakdownEl.innerHTML = `3-Bucket: <strong>${fmt0(result.bucket3Cash)}</strong> cash (${_fn.bucketCashYears}y) + <strong>${fmt0(result.bucket3Stability)}</strong> stability (${_fn.bucketStabilityYears}y at ${_fn.bucketStabilityReturn}%) + <strong>${fmt0(result.bucket3Growth)}</strong> growth (${_fn.bucketGrowthReturn}%).`;
-    } else {
-      breakdownEl.innerHTML = `Based on <strong>${fmt0(result.annualExpenses)}/year</strong> in retirement expenses, <strong>${fmt0(result.annualIncome)}/year</strong> in guaranteed income, and a <strong>${wdRatePct}% withdrawal rate</strong>.`;
-    }
-
-    // Build the "Show the Math" block — content depends on active strategy.
-    let mathHtml = `
-      <div class="fn-math-row"><span>Current monthly expenses</span><span>${fmt0(result.monthlyExpenses)}</span></div>
-      <div class="fn-math-row"><span>x Retirement adjustment</span><span>x ${(_fn.expLifestyle * 100).toFixed(0)}%</span></div>
-      <div class="fn-math-row"><span>Projected retirement monthly</span><span>${fmt0(result.adjustedMonthly)}</span></div>
-      <div class="fn-math-row"><span>x 12 = Annual retirement expenses</span><span>${fmt0(result.annualExpenses)}</span></div>
-      <div class="fn-math-row"><span style="color:var(--green)">- Annual guaranteed income</span><span style="color:var(--green)">-${fmt0(result.annualIncome)}</span></div>
-      <div class="fn-math-row"><span>Annual gap (what savings must cover)</span><span>${fmt0(result.annualGap)}</span></div>`;
-    if (isB2) {
-      mathHtml += `
-      <div class="fn-math-row"><span>Bucket 1 cash (${_fn.bucketCashYears}y × gap)</span><span>${fmt0(result.bucket2Cash)}</span></div>
-      <div class="fn-math-row"><span>Bucket 3 growth (gap ÷ ${_fn.bucketGrowthReturn}%)</span><span>${fmt0(result.bucket2Growth)}</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>${fmt0(result.freedomNumber)}</span></div>`;
-    } else if (isB3) {
-      mathHtml += `
-      <div class="fn-math-row"><span>Bucket 1 cash (${_fn.bucketCashYears}y × gap)</span><span>${fmt0(result.bucket3Cash)}</span></div>
-      <div class="fn-math-row"><span>Bucket 2 stability (${_fn.bucketStabilityYears}y × gap)</span><span>${fmt0(result.bucket3Stability)}</span></div>
-      <div class="fn-math-row"><span>Bucket 3 growth (gap × (1 − ${_fn.bucketStabilityYears}y × ${_fn.bucketStabilityReturn}%) ÷ ${_fn.bucketGrowthReturn}%)</span><span>${fmt0(result.bucket3Growth)}</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>${fmt0(result.freedomNumber)}</span></div>`;
-    } else {
-      mathHtml += `
-      <div class="fn-math-row"><span>/ Withdrawal rate</span><span>/ ${wdRatePct}%</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>${fmt0(result.freedomNumber)}</span></div>`;
-    }
-    if (showInflation) {
-      mathHtml += `
-      <div class="fn-math-row"><span>x Inflation over ${years}y at ${inflPct}%</span><span>x ${inflFactor.toFixed(2)}</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number (future dollars)</span><span>${fmt0(freedomNumberFuture)}</span></div>`;
-    }
-    mathEl.innerHTML = mathHtml;
-
-    // Strategy toggle state
-    document.querySelectorAll('.strategy-btn').forEach(btn => {
-      const active = btn.dataset.strategy === result.strategy;
-      btn.classList.toggle('active', active);
-      btn.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-
-    // Bucket inputs visibility — show whole panel only when a bucket strategy
-    // is active; hide stability fields when 2-bucket is active.
-    const bucketInputsEl = document.getElementById('bucketInputs');
-    if (bucketInputsEl) bucketInputsEl.style.display = isBucket ? 'grid' : 'none';
-    const fldStabYrs = document.getElementById('fieldStabilityYears');
-    const fldStabRet = document.getElementById('fieldStabilityReturn');
-    if (fldStabYrs) fldStabYrs.style.display = isB3 ? '' : 'none';
-    if (fldStabRet) fldStabRet.style.display = isB3 ? '' : 'none';
-
-    const bucketFootnoteEl = document.getElementById('bucketFootnote');
-    if (bucketFootnoteEl) bucketFootnoteEl.style.display = isBucket ? 'block' : 'none';
-    const footnoteTitle = document.getElementById('bucketFootnoteTitle');
-    const footnoteIntro = document.getElementById('bucketFootnoteIntro');
-    if (footnoteTitle && footnoteIntro) {
-      if (isB3) {
-        footnoteTitle.textContent = 'About the 3-Bucket Strategy';
-        footnoteIntro.textContent = 'This approach splits your portfolio into three layers: Bucket 1 (cash for the next 1–3 years), Bucket 2 (short / intermediate bonds and treasuries for years 4–7), and Bucket 3 (growth assets that compound through retirement). Income from the bond bucket helps refill cash; gains from the growth bucket eventually refill the bond bucket.';
-      } else {
-        footnoteTitle.textContent = 'About the 2-Bucket Strategy';
-        footnoteIntro.textContent = 'This approach keeps a few years of expenses in cash (money market or treasuries) and the rest in high-return assets that keep compounding through retirement. You refill the cash bucket from growth gains, never selling growth assets at a loss.';
-      }
-    }
-
-    // Sync inputs to state (skip the one currently being typed in)
-    const inputs = ['bucketCashYears','bucketStabilityYears','bucketStabilityReturn','bucketGrowthReturn'];
-    inputs.forEach(id => {
-      const el = document.getElementById(id);
-      if (el && document.activeElement !== el) el.value = _fn[id];
-    });
-
-    // Cross-strategy reference: always show the OTHER two strategies' numbers
-    // so the user can compare without switching tabs.
-    const refEl = document.getElementById('strategyReference');
-    if (refEl) {
-      if (result.freedomNumber === 0) {
-        refEl.style.display = 'none';
-      } else {
-        const parts = [];
-        if (result.strategy !== 'fourpct') parts.push(`4% Rule: <strong>${fmt0(result.fourPctFN)}</strong>`);
-        if (result.strategy !== 'bucket2') parts.push(`2-Bucket: <strong>${fmt0(result.bucket2FN)}</strong>`);
-        if (result.strategy !== 'bucket3') parts.push(`3-Bucket: <strong>${fmt0(result.bucket3FN)}</strong>`);
-        refEl.innerHTML = 'Under other strategies: ' + parts.join(' &nbsp;&middot;&nbsp; ');
-        refEl.style.display = 'block';
-      }
-    }
-
-    // Required return targets the inflation-adjusted FN only when the
-    // user has opted into seeing inflation. Otherwise targets today's.
-    const targetFN = showInflation ? freedomNumberFuture : result.freedomNumber;
-    const rrDecimal = calcRequiredReturnFromFN(targetFN, _fn.spSavings, _fn.spMonthly, _fn.spYears);
-    const rrPct = Math.round(rrDecimal * 100);
-    _fn.calculatedRR = rrPct;
-    const realReturnPct = Math.max(0, rrPct - inflPct);
-
-    // Section 3 inline display (kept for live in-context input adjustment)
-    const rrEl = document.getElementById('spRequiredReturn');
-    const rrHintEl = document.getElementById('spRequiredReturnHint');
-    // Co-headline display in the result panel (the focal point of the page)
-    const rrBigEl = document.getElementById('rrHeadlineValue');
-    const rrBigRealEl = document.getElementById('rrHeadlineReal');
-    const rrBigHintEl = document.getElementById('rrHeadlineHint');
-
-    function setRR(text, color, hintHtml) {
-      if (rrEl) { rrEl.textContent = text; rrEl.style.color = color; }
-      if (rrHintEl) rrHintEl.innerHTML = hintHtml;
-      if (rrBigEl) {
-        rrBigEl.textContent = text;
-        rrBigEl.className = 'rr-headline-value';
-        rrBigEl.style.color = color;
-      }
-      if (rrBigRealEl) rrBigRealEl.textContent = '';
-      if (rrBigHintEl) rrBigHintEl.innerHTML = hintHtml;
-    }
-
-    if (result.freedomNumber === 0) {
-      setRR('...', 'var(--accent)', 'Enter your numbers above to see your required return.');
-    } else if (_fn.spSavings >= targetFN) {
-      setRR('0%', 'var(--green)',
-        `You already have <strong>${'$' + _fn.spSavings.toLocaleString()}</strong> saved, which meets your Freedom Number of <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`);
+    if (r.freedomNumber === 0) {
+      rrEl.textContent = '0%';
+      rrEl.style.color = 'var(--green)';
+      rrHintEl.innerHTML = 'You\'re already there based on guaranteed income alone.';
+    } else if (_state.savings >= r.freedomNumber) {
+      rrEl.textContent = '0%';
+      rrEl.style.color = 'var(--green)';
+      rrHintEl.innerHTML = `You already have <strong>${fmt0(_state.savings)}</strong> saved, which meets your Freedom Number.`;
     } else if (rrPct >= 100) {
-      setRR('100%+', 'var(--accent)',
-        `Consider more years, higher monthly investment${showInflation ? ', a lower inflation assumption' : ''}, or a lower Freedom Number target.`);
+      rrEl.textContent = '100%+';
+      rrEl.style.color = 'var(--accent)';
+      rrHintEl.innerHTML = 'Consider more years, higher monthly investing, or a lower Freedom Number target.';
     } else {
-      const hint = `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`;
-      setRR(rrPct + '%', 'var(--accent)', hint);
+      rrEl.textContent = rrPct + '%';
+      rrEl.style.color = rrPct >= 18 ? 'var(--accent)' : 'var(--text)';
+      rrHintEl.innerHTML = `Starting with <strong>${fmt0(_state.savings)}</strong> and adding <strong>${fmt0(_state.monthly)}/mo</strong> for <strong>${_state.years} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>${fmt0(r.freedomNumber)}</strong>.`;
     }
 
-    // 'What could change?' levers — shown when required return is high enough
-    // to be hard to count on (>=18%). Each lever overrides one input and
-    // recomputes RR, so the user sees how much each tradeoff moves the number.
-    renderLevers(rrPct, result, inflFactor, showInflation);
+    // Math block
+    $('mathBlock').innerHTML = `
+      <div class="math-row"><span>Current monthly expenses</span><span>${fmt0(_state.expMonthly)}</span></div>
+      <div class="math-row"><span>&times; Retirement adjustment</span><span>&times; ${_state.lifestyle}%</span></div>
+      <div class="math-row"><span>Projected retirement monthly</span><span>${fmt0(r.adjustedMonthlyExpenses)}</span></div>
+      <div class="math-row"><span>&times; 12 = Annual retirement expenses</span><span>${fmt0(r.annualExpenses)}</span></div>
+      <div class="math-row" style="color:var(--green)"><span>&minus; Annual guaranteed income</span><span>&minus;${fmt0(r.annualIncome)}</span></div>
+      <div class="math-row"><span>Annual gap (what savings must cover)</span><span>${fmt0(r.annualGap)}</span></div>
+      <div class="math-row"><span>&divide; 4% withdrawal rate</span><span>&divide; 4%</span></div>
+      <div class="math-row total"><span>= Freedom Number</span><span>${fmt0(r.freedomNumber)}</span></div>`;
   }
 
-  // Compute required return with one or more input overrides; everything else
-  // mirrors the user's current state. Respects whichever strategy is active.
-  function rrWithOverride(overrides, inflFactor) {
-    const o = Object.assign({}, _fn, overrides || {});
-    const res = calcFreedomNumber(o);  // respects active strategy
-    const overriddenYears = o.spYears;
-    const inflPct = (typeof o.inflationRate === 'number' && !isNaN(o.inflationRate)) ? o.inflationRate : 3;
-    const showInfl = !!o.showInflation && res.freedomNumber > 0 && inflPct >= 0 && overriddenYears > 0;
-    const factor = showInfl ? Math.pow(1 + inflPct / 100, overriddenYears) : 1;
-    const targetFN = res.freedomNumber * factor;
-    const rrDec = calcRequiredReturnFromFN(targetFN, o.spSavings, o.spMonthly, overriddenYears);
-    return Math.round(rrDec * 100);
-  }
-
-  function renderLevers(currentRR, result, currentInflFactor, showInflation) {
-    const panel = document.getElementById('leversPanel');
-    if (!panel) return;
-
-    // Levers panel is tied to the inflation-impact view: when the user hides
-    // inflation, the levers hide too. Without inflation, RR is naturally lower
-    // and the panel adds noise. Within the inflation view, surface them when
-    // the user is in 'hard to hit' territory (>=18%, <100%).
-    const showPanel = showInflation && currentRR >= 18 && currentRR < 100 && result.freedomNumber > 0 && _fn.spSavings < (result.freedomNumber * currentInflFactor);
-    if (!showPanel) {
-      panel.style.display = 'none';
-      return;
-    }
-    panel.style.display = 'block';
-
-    // Each lever: a single override + a label describing the change
-    const levers = [
-      { id: 'Years',    overrides: { spYears: _fn.spYears + 5 },                       actionLabel: '+5 years' },
-      { id: 'Monthly',  overrides: { spMonthly: _fn.spMonthly + 300 },                 actionLabel: '+$300/mo' },
-      { id: 'Expenses', overrides: { expLifestyle: (_fn.expLifestyle || 1) * 0.85 },   actionLabel: '−15% expenses' },
-      { id: 'PartTime', overrides: { incPartTime: (_fn.incPartTime || 0) + 1500 },     actionLabel: '+$1,500/mo' }
-    ];
-
-    levers.forEach(l => {
-      const newRR = rrWithOverride(l.overrides, currentInflFactor);
-      const fromEl = document.getElementById('lever' + l.id + 'From');
-      const toEl = document.getElementById('lever' + l.id + 'To');
-      const actEl = document.getElementById('lever' + l.id + 'Action');
-      if (fromEl) fromEl.textContent = currentRR + '%';
-      if (toEl) {
-        toEl.textContent = newRR + '%';
-        toEl.classList.toggle('still-high', newRR >= 18);
-      }
-      if (actEl) actEl.textContent = l.actionLabel;
-    });
-  }
-
-
+  // --- Input handling ---
   function onInput() {
-    _fn.expMonthly = parseFloat(document.getElementById('expMonthly').value) || 0;
-    _fn.expHousing = parseFloat(document.getElementById('expHousing').value) || 0;
-    _fn.expFood = parseFloat(document.getElementById('expFood').value) || 0;
-    _fn.expHealth = parseFloat(document.getElementById('expHealth').value) || 0;
-    _fn.expTransport = parseFloat(document.getElementById('expTransport').value) || 0;
-    _fn.expTravel = parseFloat(document.getElementById('expTravel').value) || 0;
-    _fn.expOther = parseFloat(document.getElementById('expOther').value) || 0;
-    _fn.expLifestyle = parseFloat(document.getElementById('expLifestyle').value) || 1;
-    _fn.incSocSec = parseFloat(document.getElementById('incSocSec').value) || 0;
-    _fn.incSkipSS = document.getElementById('incSkipSS').checked;
-    _fn.incPension = parseFloat(document.getElementById('incPension').value) || 0;
-    _fn.incRental = parseFloat(document.getElementById('incRental').value) || 0;
-    _fn.incPartTime = parseFloat(document.getElementById('incPartTime').value) || 0;
-    _fn.wdRate = parseFloat(document.getElementById('wdRate').value) || 0.04;
-    _fn.spSavings = parseFloat(document.getElementById('spSavings').value) || 0;
-    _fn.spMonthly = parseFloat(document.getElementById('spMonthly').value) || 0;
-    _fn.spYears = parseInt(document.getElementById('spYears').value) || 1;
+    _state.expMonthly = parseFloat($('expMonthly').value) || 0;
+    _state.lifestyle = parseFloat($('lifestyle').value) || 0;
+    _state.income = parseFloat($('income').value) || 0;
+    _state.savings = parseFloat($('savings').value) || 0;
+    _state.monthly = parseFloat($('monthly').value) || 0;
+    _state.years = parseInt($('years').value, 10) || 1;
     render();
     debounceSave();
   }
 
+  function populateInputs() {
+    $('expMonthly').value = _state.expMonthly;
+    $('lifestyle').value = _state.lifestyle;
+    $('income').value = _state.income;
+    $('savings').value = _state.savings;
+    $('monthly').value = _state.monthly;
+    $('years').value = _state.years;
+  }
+
+  // --- Email gate + handoff ---
+  function isValidEmail(s) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+  }
+
+  async function captureEmail(email) {
+    // Stub. Swap GHL_WEBHOOK_URL with the real inbound webhook URL when ready;
+    // until then we console.log the payload and continue to the redirect.
+    const GHL_WEBHOOK_URL = '';
+    const payload = {
+      email: email,
+      source: 'freedom-number-calculator-lite',
+      freedomNumber: _state.calculatedFN,
+      requiredReturn: _state.calculatedRR,
+      timelineYears: _state.years,
+      monthlyInvesting: _state.monthly,
+      initialInvestment: _state.savings
+    };
+    console.log('[email capture]', payload);
+    if (!GHL_WEBHOOK_URL) return true;
+    try {
+      await fetch(GHL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        mode: 'no-cors'
+      });
+    } catch (e) {
+      console.warn('email capture POST failed (continuing anyway):', e);
+    }
+    return true;
+  }
+
+  function openModal() {
+    if (!_state.calculatedFN || _state.calculatedFN <= 0) {
+      alert('Fill in your expenses and income above so we can calculate your Freedom Number first.');
+      return;
+    }
+    $('emailError').textContent = '';
+    $('emailModalBackdrop').classList.add('show');
+    setTimeout(() => $('emailInput').focus(), 50);
+  }
+  function closeModal() {
+    $('emailModalBackdrop').classList.remove('show');
+  }
+
+  // --- Bind everything ---
   function bindEvents() {
-    ['expMonthly','expHousing','expFood','expHealth','expTransport','expTravel','expOther','expLifestyle','incSocSec','incPension','incRental','incPartTime','wdRate','spSavings','spMonthly','spYears'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', onInput);
-      if (el && el.tagName === 'SELECT') el.addEventListener('change', onInput);
-    });
-    document.getElementById('incSkipSS').addEventListener('change', onInput);
-
-    // Inflation slider — live-updates the value label and re-renders
-    const slider = document.getElementById('inflationSlider');
-    slider.addEventListener('input', () => {
-      const v = parseFloat(slider.value);
-      _fn.inflationRate = isNaN(v) ? 3 : v;
-      document.getElementById('inflationValue').textContent = _fn.inflationRate + '%';
-      render();
-      debounceSave();
+    ['expMonthly','lifestyle','income','savings','monthly','years'].forEach(id => {
+      $(id).addEventListener('input', onInput);
     });
 
-    // Toggle for showing/hiding inflation impact
-    const togBtn = document.getElementById('inflationToggleBtn');
-    if (togBtn) {
-      togBtn.addEventListener('click', () => {
-        _fn.showInflation = !_fn.showInflation;
-        render();
-        debounceSave();
-      });
-    }
-
-    // Info icon next to "Inflation Assumption" — toggles explainer panel
-    const infBtn = document.getElementById('inflationInfoBtn');
-    const infExp = document.getElementById('inflationInfoExplainer');
-    if (infBtn && infExp) {
-      infBtn.addEventListener('click', () => {
-        const open = infExp.classList.toggle('show');
-        infBtn.classList.toggle('active', open);
-      });
-    }
-
-    document.getElementById('expToggleSimple').addEventListener('click', () => {
-      _fn.expMode = 'simple';
-      document.getElementById('expToggleSimple').classList.add('active');
-      document.getElementById('expToggleDetailed').classList.remove('active');
-      document.getElementById('expSimpleMode').style.display = 'block';
-      document.getElementById('expDetailedMode').style.display = 'none';
-      render();
-      debounceSave();
-    });
-    document.getElementById('expToggleDetailed').addEventListener('click', () => {
-      _fn.expMode = 'detailed';
-      document.getElementById('expToggleSimple').classList.remove('active');
-      document.getElementById('expToggleDetailed').classList.add('active');
-      document.getElementById('expSimpleMode').style.display = 'none';
-      document.getElementById('expDetailedMode').style.display = 'block';
-      render();
-      debounceSave();
+    $('showMathBtn').addEventListener('click', () => {
+      const block = $('mathBlock');
+      block.classList.toggle('show');
+      $('showMathBtn').innerHTML = block.classList.contains('show') ? 'Hide the math &uarr;' : 'Show the math &darr;';
     });
 
-    document.getElementById('fnShowMath').addEventListener('click', () => {
-      const mathEl = document.getElementById('fnMath');
-      mathEl.classList.toggle('show');
-      document.getElementById('fnShowMath').textContent = mathEl.classList.contains('show') ? 'Hide the Math' : 'Show the Math';
+    $('ctaBtn').addEventListener('click', openModal);
+    $('emailModalClose').addEventListener('click', closeModal);
+    $('emailModalBackdrop').addEventListener('click', e => {
+      if (e.target === $('emailModalBackdrop')) closeModal();
     });
-
-    // Strategy toggle (4% Rule / 2-Bucket / 3-Bucket)
-    document.querySelectorAll('.strategy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const s = btn.dataset.strategy;
-        _fn.strategy = (s === 'bucket2' || s === 'bucket3') ? s : 'fourpct';
-        render();
-        debounceSave();
-      });
-    });
-
-    // Bucket inputs — each field maps directly to its _fn key
-    [
-      { id: 'bucketCashYears', min: 0 },
-      { id: 'bucketStabilityYears', min: 0 },
-      { id: 'bucketStabilityReturn', min: 0 },
-      { id: 'bucketGrowthReturn', min: 0.5 }
-    ].forEach(({ id, min }) => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('input', () => {
-          const v = parseFloat(el.value);
-          if (!isNaN(v) && v >= min) {
-            _fn[id] = v;
-            render();
-            debounceSave();
-          }
-        });
-      }
-    });
-
-    // CTA + email gate + handoff to Freedom Path Explorer
-    const EXPLORER_URL = 'https://jscott-62.github.io/catchup-freedom-path/';
-    const backdrop = document.getElementById('emailModalBackdrop');
-    const emailInput = document.getElementById('emailInput');
-    const emailError = document.getElementById('emailError');
-    const emailForm = document.getElementById('emailForm');
-    const emailSubmitBtn = document.getElementById('emailSubmitBtn');
-
-    function openModal() {
-      // Block opening until the calculator has produced numbers
-      if (!_fn.calculatedFN || _fn.calculatedFN <= 0) {
-        alert('Fill in your expenses and income above so we can calculate your Freedom Number first.');
-        return;
-      }
-      emailError.textContent = '';
-      backdrop.classList.add('show');
-      setTimeout(() => emailInput.focus(), 50);
-    }
-    function closeModal() {
-      backdrop.classList.remove('show');
-    }
-
-    document.getElementById('ctaExploreBtn').addEventListener('click', openModal);
-    document.getElementById('emailModalClose').addEventListener('click', closeModal);
-    backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && backdrop.classList.contains('show')) closeModal();
+      if (e.key === 'Escape' && $('emailModalBackdrop').classList.contains('show')) closeModal();
     });
 
-    function isValidEmail(s) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-    }
-
-    // Stubbed email-capture POST. Swap GHL_WEBHOOK_URL with the real
-    // GoHighLevel inbound-webhook URL when ready. Resolves regardless of
-    // network result so the user always continues to the Explorer.
-    async function captureEmail(email) {
-      const GHL_WEBHOOK_URL = '';  // TODO: paste GHL inbound webhook URL
-      const payload = {
-        email: email,
-        source: 'freedom-number-calculator',
-        freedomNumber: _fn.calculatedFN,
-        requiredReturn: _fn.calculatedRR,
-        timelineYears: _fn.spYears,
-        monthlyInvesting: _fn.spMonthly
-      };
-      console.log('[email capture]', payload);
-      if (!GHL_WEBHOOK_URL) return true;
-      try {
-        await fetch(GHL_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          mode: 'no-cors'
-        });
-      } catch (e) {
-        console.warn('email capture POST failed (continuing anyway):', e);
-      }
-      return true;
-    }
-
-    emailForm.addEventListener('submit', async (e) => {
+    $('emailForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = emailInput.value.trim();
+      const email = $('emailInput').value.trim();
       if (!isValidEmail(email)) {
-        emailError.textContent = 'Please enter a valid email address.';
-        emailInput.focus();
+        $('emailError').textContent = 'Please enter a valid email address.';
+        $('emailInput').focus();
         return;
       }
-      emailError.textContent = '';
-      emailSubmitBtn.disabled = true;
-      emailSubmitBtn.textContent = 'Opening...';
+      $('emailError').textContent = '';
+      const submitBtn = $('emailSubmitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Opening...';
 
       await captureEmail(email);
 
       const params = new URLSearchParams({
-        fn: String(_fn.calculatedFN),
-        rr: String(_fn.calculatedRR),
-        years: String(_fn.spYears),
-        monthly: String(_fn.spMonthly),
-        initial: String(_fn.spSavings || 0)
+        fn: String(_state.calculatedFN),
+        rr: String(_state.calculatedRR),
+        years: String(_state.years),
+        monthly: String(_state.monthly),
+        initial: String(_state.savings)
       });
       window.location.href = EXPLORER_URL + '?' + params.toString();
     });
   }
 
-  // Init
-  loadSettings();
+  // --- Init ---
+  loadState();
   populateInputs();
   render();
   bindEvents();
+})();
 </script>
 </body>
 </html>
