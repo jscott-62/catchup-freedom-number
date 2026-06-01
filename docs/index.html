@@ -334,6 +334,73 @@
     margin-top: 4px;
   }
 
+  /* 'What could change?' levers — surfaced when required return is high */
+  .levers-panel {
+    margin-top: 18px;
+    padding: 18px 20px;
+    background: rgba(245, 158, 11, 0.06);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 12px;
+  }
+  .levers-header { margin-bottom: 14px; }
+  .levers-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .levers-sub {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .levers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .lever {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .lever-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .lever-action {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .lever-result {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .lever-from {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  .lever-arrow { color: var(--muted); font-size: 12px; }
+  .lever-to {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--green);
+  }
+  .lever-to.still-high { color: var(--accent); }
+  @media (max-width: 600px) {
+    .levers-grid { grid-template-columns: 1fr; }
+  }
+
   /* Required return as co-headline */
   .rr-headline {
     margin-top: 20px;
@@ -798,6 +865,38 @@
         <div class="rr-headline-hint" id="rrHeadlineHint">Enter your savings and timeline above to see what return you need.</div>
       </div>
 
+      <!-- 'What could change?' levers — only shown when required return is high.
+           Each lever recomputes RR with a single input changed, giving the user
+           four concrete moves they can negotiate with their actual life. -->
+      <div class="levers-panel" id="leversPanel" style="display:none;">
+        <div class="levers-header">
+          <div class="levers-title">What could change?</div>
+          <div class="levers-sub" id="leversSub">A required return this high is hard to count on. Here's what each lever would do to that number — pull one, or combine a few.</div>
+        </div>
+        <div class="levers-grid">
+          <div class="lever" data-lever="years">
+            <div class="lever-label">Extend timeline</div>
+            <div class="lever-action" id="leverYearsAction">+5 years</div>
+            <div class="lever-result"><span class="lever-from" id="leverYearsFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverYearsTo">—</span></div>
+          </div>
+          <div class="lever" data-lever="monthly">
+            <div class="lever-label">Invest more monthly</div>
+            <div class="lever-action" id="leverMonthlyAction">+$300/mo</div>
+            <div class="lever-result"><span class="lever-from" id="leverMonthlyFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverMonthlyTo">—</span></div>
+          </div>
+          <div class="lever" data-lever="expenses">
+            <div class="lever-label">Trim retirement expenses</div>
+            <div class="lever-action" id="leverExpensesAction">−15%</div>
+            <div class="lever-result"><span class="lever-from" id="leverExpensesFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverExpensesTo">—</span></div>
+          </div>
+          <div class="lever" data-lever="parttime">
+            <div class="lever-label">Add part-time income</div>
+            <div class="lever-action" id="leverPartTimeAction">+$1,500/mo</div>
+            <div class="lever-result"><span class="lever-from" id="leverPartTimeFrom">—</span> <span class="lever-arrow">→</span> <span class="lever-to" id="leverPartTimeTo">—</span></div>
+          </div>
+        </div>
+      </div>
+
       <div class="inflation-toggle-wrap">
         <button class="inflation-toggle-btn" id="inflationToggleBtn">
           <span class="icon">📉</span><span id="inflationToggleText">Show Inflation Impact →</span>
@@ -1019,13 +1118,17 @@
     const panelEl = document.getElementById('fnResultPanel');
     if (panelEl) panelEl.classList.toggle('hide-inflation', !showInflation);
 
+    // Headline always shows today's-dollars Freedom Number — the number people
+    // can hold in their head and plan around. When inflation is shown, the
+    // future-dollars equivalent appears as a smaller reference line below it,
+    // so the user sees the inflation impact without leading with the scary
+    // bigger number.
+    valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
     if (showInflation) {
-      valueEl.textContent = '$' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
-      headlineLabelEl.textContent = 'Your Freedom Number in ' + years + ' year' + (years !== 1 ? 's' : '') + ' (at ' + inflPct + '% inflation)';
-      todayRefEl.textContent = '≈ $' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' in today\'s purchasing power';
+      headlineLabelEl.textContent = 'Your Freedom Number (in today\'s dollars)';
+      todayRefEl.textContent = 'In future dollars at ' + inflPct + '% inflation over ' + years + ' year' + (years !== 1 ? 's' : '') + ': ≈ $' + freedomNumberFuture.toLocaleString(undefined, { maximumFractionDigits: 0 });
       todayRefEl.style.display = 'block';
     } else {
-      valueEl.textContent = '$' + result.freedomNumber.toLocaleString(undefined, { maximumFractionDigits: 0 });
       headlineLabelEl.textContent = 'Your Freedom Number';
       todayRefEl.style.display = 'none';
     }
@@ -1109,7 +1212,75 @@
       const hint = `Starting with <strong>$${_fn.spSavings.toLocaleString()}</strong> and adding <strong>$${_fn.spMonthly.toLocaleString()}/mo</strong> for <strong>${_fn.spYears} years</strong>, you need <strong>${rrPct}%</strong> annually to reach <strong>$${targetFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>.`;
       setRR(rrPct + '%', 'var(--accent)', hint);
     }
+
+    // 'What could change?' levers — shown when required return is high enough
+    // to be hard to count on (>=18%). Each lever overrides one input and
+    // recomputes RR, so the user sees how much each tradeoff moves the number.
+    renderLevers(rrPct, result, inflFactor, showInflation);
   }
+
+  // Compute required return with one or more input overrides; everything else
+  // mirrors the user's current state. Returns rounded RR % (0-100+).
+  function rrWithOverride(overrides, inflFactor) {
+    const o = Object.assign({}, _fn, overrides || {});
+    const monthlyExpenses = o.expMode === 'detailed'
+      ? (o.expHousing || 0) + (o.expFood || 0) + (o.expHealth || 0) + (o.expTransport || 0) + (o.expTravel || 0) + (o.expOther || 0)
+      : (o.expMonthly || 0);
+    const adjustedMonthly = monthlyExpenses * (o.expLifestyle || 1);
+    const annualExpenses = adjustedMonthly * 12;
+    const monthlySS = o.incSkipSS ? 0 : (o.incSocSec || 0);
+    const monthlyIncome = monthlySS + (o.incPension || 0) + (o.incRental || 0) + (o.incPartTime || 0);
+    const annualIncome = monthlyIncome * 12;
+    const annualGap = Math.max(0, annualExpenses - annualIncome);
+    const todayFN = annualGap / (o.wdRate || 0.04);
+    // Levers also need to respect the inflation factor when inflation is shown.
+    // Years lever changes the factor — recompute against override.years.
+    const overriddenYears = (overrides && overrides.spYears) ? overrides.spYears : o.spYears;
+    const inflPct = (typeof o.inflationRate === 'number' && !isNaN(o.inflationRate)) ? o.inflationRate : 3;
+    const showInfl = !!o.showInflation && todayFN > 0 && inflPct >= 0 && overriddenYears > 0;
+    const factor = showInfl ? Math.pow(1 + inflPct / 100, overriddenYears) : 1;
+    const targetFN = todayFN * factor;
+    const rrDec = calcRequiredReturnFromFN(targetFN, o.spSavings, o.spMonthly, overriddenYears);
+    return Math.round(rrDec * 100);
+  }
+
+  function renderLevers(currentRR, result, currentInflFactor, showInflation) {
+    const panel = document.getElementById('leversPanel');
+    if (!panel) return;
+
+    // Only surface levers when the user is in 'hard to hit' territory.
+    // Below 18% the plan is reasonably achievable with mainstream assets;
+    // at 100%+ the calculator is already showing its own 'consider X'
+    // message, so the levers would be redundant.
+    const showPanel = currentRR >= 18 && currentRR < 100 && result.freedomNumber > 0 && _fn.spSavings < (result.freedomNumber * currentInflFactor);
+    if (!showPanel) {
+      panel.style.display = 'none';
+      return;
+    }
+    panel.style.display = 'block';
+
+    // Each lever: a single override + a label describing the change
+    const levers = [
+      { id: 'Years',    overrides: { spYears: _fn.spYears + 5 },                       actionLabel: '+5 years' },
+      { id: 'Monthly',  overrides: { spMonthly: _fn.spMonthly + 300 },                 actionLabel: '+$300/mo' },
+      { id: 'Expenses', overrides: { expLifestyle: (_fn.expLifestyle || 1) * 0.85 },   actionLabel: '−15% expenses' },
+      { id: 'PartTime', overrides: { incPartTime: (_fn.incPartTime || 0) + 1500 },     actionLabel: '+$1,500/mo' }
+    ];
+
+    levers.forEach(l => {
+      const newRR = rrWithOverride(l.overrides, currentInflFactor);
+      const fromEl = document.getElementById('lever' + l.id + 'From');
+      const toEl = document.getElementById('lever' + l.id + 'To');
+      const actEl = document.getElementById('lever' + l.id + 'Action');
+      if (fromEl) fromEl.textContent = currentRR + '%';
+      if (toEl) {
+        toEl.textContent = newRR + '%';
+        toEl.classList.toggle('still-high', newRR >= 18);
+      }
+      if (actEl) actEl.textContent = l.actionLabel;
+    });
+  }
+
 
   function onInput() {
     _fn.expMonthly = parseFloat(document.getElementById('expMonthly').value) || 0;
