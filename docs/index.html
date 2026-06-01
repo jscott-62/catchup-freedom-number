@@ -956,10 +956,11 @@
     <div class="fn-result hide-inflation" id="fnResultPanel">
       <div class="fn-label" id="fnHeadlineLabel">Your Freedom Number</div>
 
-      <!-- Withdrawal strategy: 4% Rule (default) vs Bucket Strategy -->
+      <!-- Withdrawal strategy: 4% Rule (default), 2-Bucket, or 3-Bucket -->
       <div class="strategy-toggle" role="tablist" aria-label="Withdrawal strategy">
         <button class="strategy-btn active" data-strategy="fourpct" role="tab" aria-selected="true">4% Rule</button>
-        <button class="strategy-btn" data-strategy="bucket" role="tab" aria-selected="false">Bucket Strategy</button>
+        <button class="strategy-btn" data-strategy="bucket2" role="tab" aria-selected="false">2-Bucket</button>
+        <button class="strategy-btn" data-strategy="bucket3" role="tab" aria-selected="false">3-Bucket</button>
       </div>
 
       <div class="fn-value-row">
@@ -970,14 +971,21 @@
         Fill in the fields above to calculate your personalized Freedom Number.
       </div>
 
-      <!-- Bucket Strategy inputs (years of cash buffer + growth bucket return).
-           Only shown when Bucket Strategy is the active toggle. -->
+      <!-- Bucket inputs — fields shown depend on which bucket strategy is active -->
       <div class="bucket-inputs" id="bucketInputs" style="display:none;">
-        <div class="bucket-input-field">
-          <label for="bucketYearsBuffer">Years of cash buffer</label>
-          <div class="bucket-input-row"><input type="number" id="bucketYearsBuffer" min="0" max="10" step="0.5" value="2"><span>years</span></div>
+        <div class="bucket-input-field" id="fieldCashYears">
+          <label for="bucketCashYears">Bucket 1 (Cash)</label>
+          <div class="bucket-input-row"><input type="number" id="bucketCashYears" min="0" max="10" step="0.5" value="2"><span>years</span></div>
         </div>
-        <div class="bucket-input-field">
+        <div class="bucket-input-field" id="fieldStabilityYears">
+          <label for="bucketStabilityYears">Bucket 2 (Stability)</label>
+          <div class="bucket-input-row"><input type="number" id="bucketStabilityYears" min="0" max="15" step="0.5" value="5"><span>years</span></div>
+        </div>
+        <div class="bucket-input-field" id="fieldStabilityReturn">
+          <label for="bucketStabilityReturn">Stability return</label>
+          <div class="bucket-input-row"><input type="number" id="bucketStabilityReturn" min="0" max="10" step="0.5" value="4"><span>% / yr</span></div>
+        </div>
+        <div class="bucket-input-field" id="fieldGrowthReturn">
           <label for="bucketGrowthReturn">Growth bucket return</label>
           <div class="bucket-input-row"><input type="number" id="bucketGrowthReturn" min="3" max="30" step="0.5" value="10"><span>% / yr</span></div>
         </div>
@@ -1078,13 +1086,13 @@
       </div>
       <div class="fn-math" id="fnMath"></div>
 
-      <!-- Bucket-strategy education: only shown when Bucket is the active toggle -->
+      <!-- Bucket-strategy education: shown when either bucket strategy is active -->
       <div class="bucket-footnote" id="bucketFootnote" style="display:none;">
-        <h4>About the Bucket Strategy</h4>
-        <p>This approach assumes you keep a few years of expenses in cash (money market or treasuries) and the rest in high-return assets that keep compounding through retirement. You refill the cash bucket from growth gains, never selling growth assets at a loss.</p>
+        <h4 id="bucketFootnoteTitle">About the Bucket Strategy</h4>
+        <p id="bucketFootnoteIntro">This approach keeps a few years of expenses in cash (money market or treasuries) and the rest in high-return assets that keep compounding through retirement. You refill the cash bucket from growth gains, never selling growth assets at a loss.</p>
         <p><strong>Three risks to weigh:</strong></p>
         <ul>
-          <li><strong>Sequence-of-returns risk.</strong> If markets crash for longer than your buffer covers, you may have to sell growth assets at the worst time. Two years of buffer protects against most historical crashes; three years protects against nearly all of them.</li>
+          <li><strong>Sequence-of-returns risk.</strong> If markets crash for longer than your buffers cover, you may have to sell growth assets at the worst time. The 3-bucket strategy adds a stability bucket (bonds, treasuries) specifically to extend this protection &mdash; usually to 7+ years.</li>
           <li><strong>Discipline.</strong> When the growth bucket is up, you skim profits to refill cash. When it's down, you don't touch it. The math only works if you actually follow the rules.</li>
           <li><strong>Return assumptions.</strong> Your growth bucket return is an assumption, not a guarantee. The S&amp;P 500 has averaged ~7% real returns historically; growth-tilted portfolios can be higher but more volatile.</li>
         </ul>
@@ -1153,9 +1161,12 @@
     spYears: 15,
     inflationRate: 3,
     showInflation: false,
-    // Withdrawal strategy: 'fourpct' (4% rule) or 'bucket' (cash buffer + growth bucket)
+    // Withdrawal strategy: 'fourpct' (4% rule), 'bucket2' (cash + growth),
+    // or 'bucket3' (cash + stability + growth)
     strategy: 'fourpct',
-    bucketYearsBuffer: 2,
+    bucketCashYears: 2,
+    bucketStabilityYears: 5,
+    bucketStabilityReturn: 4,
     bucketGrowthReturn: 10,
     calculatedFN: 0,
     calculatedRR: 0
@@ -1204,40 +1215,65 @@
     }
   }
 
-  function calcFreedomNumber() {
+  function calcFreedomNumber(stateOverride) {
+    // Compute against either _fn (default) or a shallow-merged override —
+    // letting the 'What could change?' levers pass spYears/spMonthly/etc.
+    // overrides while still respecting the user's active strategy.
+    const s = stateOverride || _fn;
     let monthlyExpenses;
-    if (_fn.expMode === 'detailed') {
-      monthlyExpenses = (_fn.expHousing || 0) + (_fn.expFood || 0) + (_fn.expHealth || 0)
-        + (_fn.expTransport || 0) + (_fn.expTravel || 0) + (_fn.expOther || 0);
+    if (s.expMode === 'detailed') {
+      monthlyExpenses = (s.expHousing || 0) + (s.expFood || 0) + (s.expHealth || 0)
+        + (s.expTransport || 0) + (s.expTravel || 0) + (s.expOther || 0);
     } else {
-      monthlyExpenses = _fn.expMonthly || 0;
+      monthlyExpenses = s.expMonthly || 0;
     }
-    const adjustedMonthly = monthlyExpenses * (_fn.expLifestyle || 1);
+    const adjustedMonthly = monthlyExpenses * (s.expLifestyle || 1);
     const annualExpenses = adjustedMonthly * 12;
-    const monthlySS = _fn.incSkipSS ? 0 : (_fn.incSocSec || 0);
-    const monthlyIncome = monthlySS + (_fn.incPension || 0) + (_fn.incRental || 0) + (_fn.incPartTime || 0);
+    const monthlySS = s.incSkipSS ? 0 : (s.incSocSec || 0);
+    const monthlyIncome = monthlySS + (s.incPension || 0) + (s.incRental || 0) + (s.incPartTime || 0);
     const annualIncome = monthlyIncome * 12;
     const annualGap = Math.max(0, annualExpenses - annualIncome);
 
-    // Strategy A: 4% rule (traditional). FN = annualGap / withdrawalRate.
-    const fourPctFN = annualGap / (_fn.wdRate || 0.04);
+    // Strategy A: 4% Rule. FN = annualGap / withdrawalRate.
+    const fourPctFN = annualGap / (s.wdRate || 0.04);
 
-    // Strategy B: Bucket strategy. Cash buffer (Y years × annualGap) for
-    // near-term expenses, plus a growth bucket large enough that its annual
-    // return covers the annualGap perpetually.
-    // bucketFN = annualGap × (yearsBuffer + 1/growthReturn)
-    const yearsBuf = Math.max(0, _fn.bucketYearsBuffer || 0);
-    const growthRetDec = Math.max(0.01, (_fn.bucketGrowthReturn || 10) / 100);
-    const bucketCash = annualGap * yearsBuf;
-    const bucketGrowth = annualGap / growthRetDec;
-    const bucketFN = bucketCash + bucketGrowth;
+    // Shared bucket inputs
+    const cashYears = Math.max(0, s.bucketCashYears || 0);
+    const stabYears = Math.max(0, s.bucketStabilityYears || 0);
+    const stabRetDec = Math.max(0, (s.bucketStabilityReturn || 0) / 100);
+    const growthRetDec = Math.max(0.01, (s.bucketGrowthReturn || 10) / 100);
 
-    const strategy = _fn.strategy === 'bucket' ? 'bucket' : 'fourpct';
-    const freedomNumber = strategy === 'bucket' ? bucketFN : fourPctFN;
+    // Strategy B: 2-Bucket. Cash buffer (cashYears × annualGap) + growth bucket
+    // large enough that its annual return covers annualGap perpetually.
+    //   B1 = gap × cashYears
+    //   B3 = gap / growthReturn
+    const b2_b1 = annualGap * cashYears;
+    const b2_b3 = annualGap / growthRetDec;
+    const bucket2FN = b2_b1 + b2_b3;
+
+    // Strategy C: 3-Bucket. Cash + stability + growth.
+    // In equilibrium: B2*r2 + B3*r3 = gap (Bucket 1 is just a runway, no income).
+    //   B1 = gap × cashYears
+    //   B2 = gap × stabilityYears
+    //   B3 = gap × (1 − stabilityYears × stabilityReturn) / growthReturn
+    //        capped at 0 if Bucket 2 already generates more than the gap.
+    const b3_b1 = annualGap * cashYears;
+    const b3_b2 = annualGap * stabYears;
+    const b3FactorTop = Math.max(0, 1 - (stabYears * stabRetDec));
+    const b3_b3 = (annualGap * b3FactorTop) / growthRetDec;
+    const bucket3FN = b3_b1 + b3_b2 + b3_b3;
+
+    const strategy = ['fourpct', 'bucket2', 'bucket3'].includes(s.strategy) ? s.strategy : 'fourpct';
+    let freedomNumber = fourPctFN;
+    if (strategy === 'bucket2') freedomNumber = bucket2FN;
+    else if (strategy === 'bucket3') freedomNumber = bucket3FN;
 
     return {
       monthlyExpenses, adjustedMonthly, annualExpenses, monthlySS, monthlyIncome, annualIncome, annualGap,
-      freedomNumber, fourPctFN, bucketFN, bucketCash, bucketGrowth, strategy
+      freedomNumber, strategy,
+      fourPctFN,
+      bucket2FN, bucket2Cash: b2_b1, bucket2Growth: b2_b3,
+      bucket3FN, bucket3Cash: b3_b1, bucket3Stability: b3_b2, bucket3Growth: b3_b3
     };
   }
 
@@ -1317,70 +1353,100 @@
     if (totalEl) totalEl.textContent = '$' + result.monthlyExpenses.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
     const wdRatePct = (_fn.wdRate * 100).toFixed(0);
-    const isBucket = result.strategy === 'bucket';
+    const isB2 = result.strategy === 'bucket2';
+    const isB3 = result.strategy === 'bucket3';
+    const isBucket = isB2 || isB3;
+    const fmt0 = (n) => '$' + (n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
     if (result.freedomNumber === 0) {
       breakdownEl.innerHTML = 'Your guaranteed income covers your expenses. You technically don\'t need savings to retire, though a cushion is always smart.';
-    } else if (isBucket) {
-      breakdownEl.innerHTML = `Bucket strategy: <strong>$${result.bucketCash.toLocaleString(undefined,{maximumFractionDigits:0})}</strong> in a cash buffer (${_fn.bucketYearsBuffer} years of expenses) + <strong>$${result.bucketGrowth.toLocaleString(undefined,{maximumFractionDigits:0})}</strong> in a growth bucket earning <strong>${_fn.bucketGrowthReturn}%</strong> per year.`;
+    } else if (isB2) {
+      breakdownEl.innerHTML = `2-Bucket: <strong>${fmt0(result.bucket2Cash)}</strong> in a cash buffer (${_fn.bucketCashYears} years of expenses) + <strong>${fmt0(result.bucket2Growth)}</strong> in a growth bucket earning <strong>${_fn.bucketGrowthReturn}%</strong> per year.`;
+    } else if (isB3) {
+      breakdownEl.innerHTML = `3-Bucket: <strong>${fmt0(result.bucket3Cash)}</strong> cash (${_fn.bucketCashYears}y) + <strong>${fmt0(result.bucket3Stability)}</strong> stability (${_fn.bucketStabilityYears}y at ${_fn.bucketStabilityReturn}%) + <strong>${fmt0(result.bucket3Growth)}</strong> growth (${_fn.bucketGrowthReturn}%).`;
     } else {
-      breakdownEl.innerHTML = `Based on <strong>$${result.annualExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}/year</strong> in retirement expenses, <strong>$${result.annualIncome.toLocaleString(undefined, {maximumFractionDigits: 0})}/year</strong> in guaranteed income, and a <strong>${wdRatePct}% withdrawal rate</strong>.`;
+      breakdownEl.innerHTML = `Based on <strong>${fmt0(result.annualExpenses)}/year</strong> in retirement expenses, <strong>${fmt0(result.annualIncome)}/year</strong> in guaranteed income, and a <strong>${wdRatePct}% withdrawal rate</strong>.`;
     }
 
-    // Build the "Show the Math" block — content depends on which strategy
-    // is active. Common rows on top, strategy-specific calculation below.
+    // Build the "Show the Math" block — content depends on active strategy.
     let mathHtml = `
-      <div class="fn-math-row"><span>Current monthly expenses</span><span>$${result.monthlyExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
+      <div class="fn-math-row"><span>Current monthly expenses</span><span>${fmt0(result.monthlyExpenses)}</span></div>
       <div class="fn-math-row"><span>x Retirement adjustment</span><span>x ${(_fn.expLifestyle * 100).toFixed(0)}%</span></div>
-      <div class="fn-math-row"><span>Projected retirement monthly</span><span>$${result.adjustedMonthly.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-      <div class="fn-math-row"><span>x 12 = Annual retirement expenses</span><span>$${result.annualExpenses.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-      <div class="fn-math-row"><span style="color:var(--green)">- Annual guaranteed income</span><span style="color:var(--green)">-$${result.annualIncome.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-      <div class="fn-math-row"><span>Annual gap (what savings must cover)</span><span>$${result.annualGap.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
-    if (isBucket) {
+      <div class="fn-math-row"><span>Projected retirement monthly</span><span>${fmt0(result.adjustedMonthly)}</span></div>
+      <div class="fn-math-row"><span>x 12 = Annual retirement expenses</span><span>${fmt0(result.annualExpenses)}</span></div>
+      <div class="fn-math-row"><span style="color:var(--green)">- Annual guaranteed income</span><span style="color:var(--green)">-${fmt0(result.annualIncome)}</span></div>
+      <div class="fn-math-row"><span>Annual gap (what savings must cover)</span><span>${fmt0(result.annualGap)}</span></div>`;
+    if (isB2) {
       mathHtml += `
-      <div class="fn-math-row"><span>Cash buffer (${_fn.bucketYearsBuffer} years × annual gap)</span><span>$${result.bucketCash.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-      <div class="fn-math-row"><span>Growth bucket (annual gap ÷ ${_fn.bucketGrowthReturn}%)</span><span>$${result.bucketGrowth.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>$${result.freedomNumber.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+      <div class="fn-math-row"><span>Bucket 1 cash (${_fn.bucketCashYears}y × gap)</span><span>${fmt0(result.bucket2Cash)}</span></div>
+      <div class="fn-math-row"><span>Bucket 3 growth (gap ÷ ${_fn.bucketGrowthReturn}%)</span><span>${fmt0(result.bucket2Growth)}</span></div>
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>${fmt0(result.freedomNumber)}</span></div>`;
+    } else if (isB3) {
+      mathHtml += `
+      <div class="fn-math-row"><span>Bucket 1 cash (${_fn.bucketCashYears}y × gap)</span><span>${fmt0(result.bucket3Cash)}</span></div>
+      <div class="fn-math-row"><span>Bucket 2 stability (${_fn.bucketStabilityYears}y × gap)</span><span>${fmt0(result.bucket3Stability)}</span></div>
+      <div class="fn-math-row"><span>Bucket 3 growth (gap × (1 − ${_fn.bucketStabilityYears}y × ${_fn.bucketStabilityReturn}%) ÷ ${_fn.bucketGrowthReturn}%)</span><span>${fmt0(result.bucket3Growth)}</span></div>
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>${fmt0(result.freedomNumber)}</span></div>`;
     } else {
       mathHtml += `
       <div class="fn-math-row"><span>/ Withdrawal rate</span><span>/ ${wdRatePct}%</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>$${result.freedomNumber.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number${showInflation ? ' (today)' : ''}</span><span>${fmt0(result.freedomNumber)}</span></div>`;
     }
     if (showInflation) {
       mathHtml += `
       <div class="fn-math-row"><span>x Inflation over ${years}y at ${inflPct}%</span><span>x ${inflFactor.toFixed(2)}</span></div>
-      <div class="fn-math-row fn-math-total"><span>= Freedom Number (future dollars)</span><span>$${freedomNumberFuture.toLocaleString(undefined, {maximumFractionDigits: 0})}</span></div>`;
+      <div class="fn-math-row fn-math-total"><span>= Freedom Number (future dollars)</span><span>${fmt0(freedomNumberFuture)}</span></div>`;
     }
     mathEl.innerHTML = mathHtml;
 
-    // Drive strategy UI: toggle button state, input visibility, reference line,
-    // footnote visibility. All keyed off result.strategy.
+    // Strategy toggle state
     document.querySelectorAll('.strategy-btn').forEach(btn => {
       const active = btn.dataset.strategy === result.strategy;
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-selected', active ? 'true' : 'false');
     });
+
+    // Bucket inputs visibility — show whole panel only when a bucket strategy
+    // is active; hide stability fields when 2-bucket is active.
     const bucketInputsEl = document.getElementById('bucketInputs');
     if (bucketInputsEl) bucketInputsEl.style.display = isBucket ? 'grid' : 'none';
+    const fldStabYrs = document.getElementById('fieldStabilityYears');
+    const fldStabRet = document.getElementById('fieldStabilityReturn');
+    if (fldStabYrs) fldStabYrs.style.display = isB3 ? '' : 'none';
+    if (fldStabRet) fldStabRet.style.display = isB3 ? '' : 'none';
+
     const bucketFootnoteEl = document.getElementById('bucketFootnote');
     if (bucketFootnoteEl) bucketFootnoteEl.style.display = isBucket ? 'block' : 'none';
+    const footnoteTitle = document.getElementById('bucketFootnoteTitle');
+    const footnoteIntro = document.getElementById('bucketFootnoteIntro');
+    if (footnoteTitle && footnoteIntro) {
+      if (isB3) {
+        footnoteTitle.textContent = 'About the 3-Bucket Strategy';
+        footnoteIntro.textContent = 'This approach splits your portfolio into three layers: Bucket 1 (cash for the next 1–3 years), Bucket 2 (short / intermediate bonds and treasuries for years 4–7), and Bucket 3 (growth assets that compound through retirement). Income from the bond bucket helps refill cash; gains from the growth bucket eventually refill the bond bucket.';
+      } else {
+        footnoteTitle.textContent = 'About the 2-Bucket Strategy';
+        footnoteIntro.textContent = 'This approach keeps a few years of expenses in cash (money market or treasuries) and the rest in high-return assets that keep compounding through retirement. You refill the cash bucket from growth gains, never selling growth assets at a loss.';
+      }
+    }
 
-    // Sync bucket inputs to state (only when not focused, to avoid stomping typing)
-    const yrsInp = document.getElementById('bucketYearsBuffer');
-    if (yrsInp && document.activeElement !== yrsInp) yrsInp.value = _fn.bucketYearsBuffer;
-    const grInp = document.getElementById('bucketGrowthReturn');
-    if (grInp && document.activeElement !== grInp) grInp.value = _fn.bucketGrowthReturn;
+    // Sync inputs to state (skip the one currently being typed in)
+    const inputs = ['bucketCashYears','bucketStabilityYears','bucketStabilityReturn','bucketGrowthReturn'];
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && document.activeElement !== el) el.value = _fn[id];
+    });
 
+    // Cross-strategy reference: always show the OTHER two strategies' numbers
+    // so the user can compare without switching tabs.
     const refEl = document.getElementById('strategyReference');
     if (refEl) {
       if (result.freedomNumber === 0) {
         refEl.style.display = 'none';
-      } else if (isBucket) {
-        const diff = result.fourPctFN - result.bucketFN;
-        refEl.innerHTML = `Under the <strong>4% Rule</strong>, you'd need <strong>$${result.fourPctFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>${diff > 0 ? ` &mdash; a $${diff.toLocaleString(undefined,{maximumFractionDigits:0})} cushion above the Bucket Strategy.` : '.'}`;
-        refEl.style.display = 'block';
       } else {
-        const diff = result.fourPctFN - result.bucketFN;
-        refEl.innerHTML = `With a <strong>Bucket Strategy</strong> (${_fn.bucketYearsBuffer}y cash buffer + ${_fn.bucketGrowthReturn}% growth bucket), you'd only need <strong>$${result.bucketFN.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>${diff > 0 ? ` &mdash; $${diff.toLocaleString(undefined,{maximumFractionDigits:0})} less than the 4% Rule.` : '.'}`;
+        const parts = [];
+        if (result.strategy !== 'fourpct') parts.push(`4% Rule: <strong>${fmt0(result.fourPctFN)}</strong>`);
+        if (result.strategy !== 'bucket2') parts.push(`2-Bucket: <strong>${fmt0(result.bucket2FN)}</strong>`);
+        if (result.strategy !== 'bucket3') parts.push(`3-Bucket: <strong>${fmt0(result.bucket3FN)}</strong>`);
+        refEl.innerHTML = 'Under other strategies: ' + parts.join(' &nbsp;&middot;&nbsp; ');
         refEl.style.display = 'block';
       }
     }
@@ -1433,26 +1499,15 @@
   }
 
   // Compute required return with one or more input overrides; everything else
-  // mirrors the user's current state. Returns rounded RR % (0-100+).
+  // mirrors the user's current state. Respects whichever strategy is active.
   function rrWithOverride(overrides, inflFactor) {
     const o = Object.assign({}, _fn, overrides || {});
-    const monthlyExpenses = o.expMode === 'detailed'
-      ? (o.expHousing || 0) + (o.expFood || 0) + (o.expHealth || 0) + (o.expTransport || 0) + (o.expTravel || 0) + (o.expOther || 0)
-      : (o.expMonthly || 0);
-    const adjustedMonthly = monthlyExpenses * (o.expLifestyle || 1);
-    const annualExpenses = adjustedMonthly * 12;
-    const monthlySS = o.incSkipSS ? 0 : (o.incSocSec || 0);
-    const monthlyIncome = monthlySS + (o.incPension || 0) + (o.incRental || 0) + (o.incPartTime || 0);
-    const annualIncome = monthlyIncome * 12;
-    const annualGap = Math.max(0, annualExpenses - annualIncome);
-    const todayFN = annualGap / (o.wdRate || 0.04);
-    // Levers also need to respect the inflation factor when inflation is shown.
-    // Years lever changes the factor — recompute against override.years.
-    const overriddenYears = (overrides && overrides.spYears) ? overrides.spYears : o.spYears;
+    const res = calcFreedomNumber(o);  // respects active strategy
+    const overriddenYears = o.spYears;
     const inflPct = (typeof o.inflationRate === 'number' && !isNaN(o.inflationRate)) ? o.inflationRate : 3;
-    const showInfl = !!o.showInflation && todayFN > 0 && inflPct >= 0 && overriddenYears > 0;
+    const showInfl = !!o.showInflation && res.freedomNumber > 0 && inflPct >= 0 && overriddenYears > 0;
     const factor = showInfl ? Math.pow(1 + inflPct / 100, overriddenYears) : 1;
-    const targetFN = todayFN * factor;
+    const targetFN = res.freedomNumber * factor;
     const rrDec = calcRequiredReturnFromFN(targetFN, o.spSavings, o.spMonthly, overriddenYears);
     return Math.round(rrDec * 100);
   }
@@ -1580,38 +1635,35 @@
       document.getElementById('fnShowMath').textContent = mathEl.classList.contains('show') ? 'Hide the Math' : 'Show the Math';
     });
 
-    // Strategy toggle (4% Rule vs Bucket Strategy)
+    // Strategy toggle (4% Rule / 2-Bucket / 3-Bucket)
     document.querySelectorAll('.strategy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        _fn.strategy = btn.dataset.strategy === 'bucket' ? 'bucket' : 'fourpct';
+        const s = btn.dataset.strategy;
+        _fn.strategy = (s === 'bucket2' || s === 'bucket3') ? s : 'fourpct';
         render();
         debounceSave();
       });
     });
 
-    // Bucket Strategy inputs
-    const bucketYrsInp = document.getElementById('bucketYearsBuffer');
-    if (bucketYrsInp) {
-      bucketYrsInp.addEventListener('input', () => {
-        const v = parseFloat(bucketYrsInp.value);
-        if (!isNaN(v) && v >= 0) {
-          _fn.bucketYearsBuffer = v;
-          render();
-          debounceSave();
-        }
-      });
-    }
-    const bucketGrInp = document.getElementById('bucketGrowthReturn');
-    if (bucketGrInp) {
-      bucketGrInp.addEventListener('input', () => {
-        const v = parseFloat(bucketGrInp.value);
-        if (!isNaN(v) && v > 0) {
-          _fn.bucketGrowthReturn = v;
-          render();
-          debounceSave();
-        }
-      });
-    }
+    // Bucket inputs — each field maps directly to its _fn key
+    [
+      { id: 'bucketCashYears', min: 0 },
+      { id: 'bucketStabilityYears', min: 0 },
+      { id: 'bucketStabilityReturn', min: 0 },
+      { id: 'bucketGrowthReturn', min: 0.5 }
+    ].forEach(({ id, min }) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => {
+          const v = parseFloat(el.value);
+          if (!isNaN(v) && v >= min) {
+            _fn[id] = v;
+            render();
+            debounceSave();
+          }
+        });
+      }
+    });
 
     // CTA + email gate + handoff to Freedom Path Explorer
     const EXPLORER_URL = 'https://jscott-62.github.io/catchup-freedom-path/';
