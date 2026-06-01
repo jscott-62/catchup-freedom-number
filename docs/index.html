@@ -1248,11 +1248,11 @@
     const panel = document.getElementById('leversPanel');
     if (!panel) return;
 
-    // Only surface levers when the user is in 'hard to hit' territory.
-    // Below 18% the plan is reasonably achievable with mainstream assets;
-    // at 100%+ the calculator is already showing its own 'consider X'
-    // message, so the levers would be redundant.
-    const showPanel = currentRR >= 18 && currentRR < 100 && result.freedomNumber > 0 && _fn.spSavings < (result.freedomNumber * currentInflFactor);
+    // Levers panel is tied to the inflation-impact view: when the user hides
+    // inflation, the levers hide too. Without inflation, RR is naturally lower
+    // and the panel adds noise. Within the inflation view, surface them when
+    // the user is in 'hard to hit' territory (>=18%, <100%).
+    const showPanel = showInflation && currentRR >= 18 && currentRR < 100 && result.freedomNumber > 0 && _fn.spSavings < (result.freedomNumber * currentInflFactor);
     if (!showPanel) {
       panel.style.display = 'none';
       return;
