@@ -536,11 +536,16 @@
     };
     console.log('[email capture]', payload);
     if (!GHL_WEBHOOK_URL) return true;
+    // GHL's inbound webhook rejects a text/plain body, which is all a browser
+    // can send under mode:'no-cors' (no-cors forbids the application/json
+    // Content-Type header). So we send the data as URL query params instead,
+    // which no-cors allows and GHL parses reliably.
+    const qs = new URLSearchParams(
+      Object.entries(payload).map(([k, v]) => [k, String(v)])
+    ).toString();
     try {
-      await fetch(GHL_WEBHOOK_URL, {
+      await fetch(GHL_WEBHOOK_URL + '?' + qs, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
         mode: 'no-cors'
       });
     } catch (e) {
