@@ -536,17 +536,17 @@
     };
     console.log('[email capture]', payload);
     if (!GHL_WEBHOOK_URL) return true;
-    // GHL's inbound webhook rejects a text/plain body, which is all a browser
-    // can send under mode:'no-cors' (no-cors forbids the application/json
-    // Content-Type header). So we send the data as URL query params instead,
-    // which no-cors allows and GHL parses reliably.
-    const qs = new URLSearchParams(
-      Object.entries(payload).map(([k, v]) => [k, String(v)])
-    ).toString();
+    // GHL's inbound webhook supports CORS (its OPTIONS preflight returns
+    // access-control-allow-origin/headers/methods), so we send a normal
+    // application/json request. GHL parses the JSON body and the workflow's
+    // field mappings ({{inboundWebhookRequest.email}}, etc.) populate correctly.
+    // NOTE: do NOT use mode:'no-cors' here. That forces the body to text/plain,
+    // which GHL rejects ("invalid data: Body payload"), creating empty contacts.
     try {
-      await fetch(GHL_WEBHOOK_URL + '?' + qs, {
+      await fetch(GHL_WEBHOOK_URL, {
         method: 'POST',
-        mode: 'no-cors'
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
     } catch (e) {
       console.warn('email capture POST failed (continuing anyway):', e);
